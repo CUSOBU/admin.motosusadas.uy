@@ -17,6 +17,12 @@ async function initApp() {
     .use(vuetify)
     .use(i18n)
     .use(veeValidatePlugin);
+  // Clear expired token on startup
+  try {
+    await store.dispatch("auth/checkExpiration");
+  } catch (e) {
+    // ignore
+  }
 
   app.mount("#app");
 }

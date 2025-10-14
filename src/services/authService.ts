@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-import store from "@/plugins/store/store";
+import { LoginResponse } from "@/models/user.model";
 
 class ApiError extends Error {
   status?: number;
@@ -29,69 +29,15 @@ async function postJson(path: string, body: any) {
   return res.json();
 }
 
-export async function login(phoneNumber: string, pin: string) {
-  try {
-    const payload = { phoneNumber, pin };
-    const data = await postJson(`/auth/login`, payload);
+export async function loginWithPassword(email: string, password: string): Promise<LoginResponse> {
+  const payload = { email, password };
+  const data: LoginResponse = await postJson(`/api/auth/login`, payload);
 
-    // Expected shape: { token: string, user: { accessLevel: string, ... } }
-    const token = data?.token;
-    const user = data?.user;
-
-    if (!token) {
-      const err = new ApiError("authentication_failed");
-      err.data = data;
-      throw err;
-    }
-
-    Cookies.set("auth-token", token);
-
-    if (user?.accessLevel !== "admin") {
-      const err = new ApiError("access_denied");
-      err.data = { message: "access-denied" };
-      await store.dispatch("notificator/errorResponse", err);
-      throw err;
-    }
-
-    return { token, user };
-  } catch (error: any) {
-    if (!error.customMessage) {
-      error.customMessage = error.status ? "server_error" : "network_error";
-    }
-    await store.dispatch("notificator/errorResponse", error);
-    throw error;
+  if (!data?.token) {
+    const err = new ApiError("authentication_failed");
+    err.data = data;
+    throw err;
   }
-}
 
-export async function loginWithPassword(email: string, password: string) {
-  try {
-    const payload = { email, password };
-    const data = await postJson(`/auth/login-password`, payload);
-
-    const token = data?.token;
-    const user = data?.user;
-
-    if (!token) {
-      const err = new ApiError("authentication_failed");
-      err.data = data;
-      throw err;
-    }
-
-    Cookies.set("auth-token", token);
-
-    if (user?.accessLevel !== "admin") {
-      const err = new ApiError("access_denied");
-      err.data = { message: "access-denied" };
-      await store.dispatch("notificator/errorResponse", err);
-      throw err;
-    }
-
-    return { token, user };
-  } catch (error: any) {
-    if (!error.customMessage) {
-      error.customMessage = error.status ? "server_error" : "network_error";
-    }
-    await store.dispatch("notificator/errorResponse", error);
-    throw error;
-  }
+  return data;
 }

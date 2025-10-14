@@ -6,6 +6,7 @@ import {
 } from "vue-router";
 import store from "@/plugins/store/store";
 import i18n from "@/plugins/i18n";
+import Roles from "@/constants/Roles";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -44,15 +45,51 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
-        path: "/example-table",
-        name: "example-table",
+        path: "/users",
+        name: "users",
         component: () =>
-          import(
-            /* webpackMode: "lazy" */ "../views/Examples/TableExample.vue"
-          ),
+          import(/* webpackMode: "lazy" */ "../views/Auth/Users/Index.vue"),
         meta: {
-          title: "example-table",
+          title: "users",
           auth: true,
+          requiresAdmin: true,
+          roles: [Roles.Admin],
+        },
+      },
+      {
+        path: "/users/create",
+        name: "users-create",
+        component: () =>
+          import(/* webpackMode: "lazy" */ "../views/Auth/Users/Form.vue"),
+        meta: {
+          title: "users-create",
+          auth: true,
+          requiresAdmin: true,
+          roles: [Roles.Admin],
+        },
+      },
+      {
+        path: "/users/:id",
+        name: "users-details",
+        component: () =>
+          import(/* webpackMode: "lazy" */ "../views/Auth/Users/Details.vue"),
+        meta: {
+          title: "users-details",
+          auth: true,
+          requiresAdmin: true,
+          roles: [Roles.Admin],
+        },
+      },
+      {
+        path: "/users/:id/edit",
+        name: "users-edit",
+        component: () =>
+          import(/* webpackMode: "lazy" */ "../views/Auth/Users/Form.vue"),
+        meta: {
+          title: "users-edit",
+          auth: true,
+          requiresAdmin: true,
+          roles: [Roles.Admin],
         },
       },
     ],
@@ -64,18 +101,48 @@ const router = createRouter({
   routes,
 });
 router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!store.getters["auth/isAuthenticated"];
+  const currentUser = store.getters["auth/currentUser"];
+
+  // Rutas que requieren autenticación
   if (to.matched.some((record) => record.meta.auth)) {
-    if (!store.getters["auth/isAuthenticated"]) {
-      next({
-        path: "/login",
-        query: { redirect: to.fullPath },
-      });
-    } else {
-      next();
+    if (!isAuthenticated) {
+      return next({ path: "/login", query: { redirect: to.fullPath } });
     }
-  } else {
-    next();
+
+    const requiredRoles: number[] = to.matched
+      .flatMap((r) =>
+        r.meta && (r.meta as any).roles ? (r.meta as any).roles : []
+      )
+      .map((v: any) => Number(v))
+      .filter((v: number) => !Number.isNaN(v));
+
+    if (requiredRoles.length > 0) {
+      const userLevel = Number(currentUser?.authLevel ?? null);
+      if (!currentUser || !requiredRoles.includes(userLevel)) {
+        return next({ name: "dashboard" });
+      }
+    }
+
+    if (to.matched.some((record) => record.meta.requiresAdmin)) {
+      const userLevel = Number(currentUser?.authLevel ?? null);
+      if (!currentUser || userLevel !== Roles.Admin) {
+        return next({ name: "dashboard" });
+      }
+    }
+
+    return next();
   }
+
+  if (to.name === "UserLogin" && isAuthenticated) {
+    return next({ name: "dashboard" });
+  }
+
+  if (!isAuthenticated && to.path === "/") {
+    return next({ path: "/login" });
+  }
+
+  return next();
 });
 
 router.afterEach((to) => {

@@ -1,6 +1,7 @@
 import { createStore } from "vuex";
 import auth from "./modules/auth";
 import notificator from "./modules/notificator";
+import users from "./modules/users";
 
 export interface State {
   isLoading: boolean;
@@ -20,6 +21,7 @@ export default createStore({
   modules: {
     auth,
     notificator,
+    users,
   },
   state: {
     isLoading: false,
