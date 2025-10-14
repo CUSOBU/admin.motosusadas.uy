@@ -58,6 +58,22 @@
                 </Field>
               </v-col>
               <v-col cols="12" class="py-0">
+                <Field v-model="request.agencyId" name="agency-id" v-slot="{ field, errors, value }">
+                  <v-select
+                    v-bind="field"
+                    :model-value="value"
+                    :items="agencies.length ? agencies : []"
+                    item-title="name"
+                    item-value="id"
+                    variant="outlined"
+                    :label="$t('agency')"
+                    :error-messages="errors"
+                    clearable
+                    :key="'agency-select-' + agencies.length"
+                  ></v-select>
+                </Field>
+              </v-col>
+              <v-col cols="12" class="py-0">
                 <v-checkbox v-if="user" v-model="request.active" :label="$t('active')" hide-details class="my-0" />
               </v-col>
               <v-col cols="6">
@@ -82,7 +98,7 @@
 </template>
 
 <script lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import { useStore } from 'vuex';
 import i18n from '@/plugins/i18n';
 import Heading from "@/views/components/Heading.vue";
@@ -127,6 +143,7 @@ export default {
       phoneNumber: '',
       active: true,
       accessLevel: 1,
+      agencyId: null,
       password: '',
     });
 
@@ -148,9 +165,11 @@ export default {
             id: fetchedUser.id,
             fullName: fetchedUser.fullName,
             email: fetchedUser.email,
-            accessLevel: String(fetchedUser.authLevel),
+              accessLevel: String(fetchedUser.authLevel),
             active: fetchedUser.active,
             phoneNumber: fetchedUser.phoneNumber || '',
+              // keep agencyId if returned by API
+              ...(fetchedUser.agencyId ? { agencyId: fetchedUser.agencyId } : {}),
           } as User;
           originalUser.value = { ...user.value };
         } else {
@@ -169,9 +188,22 @@ export default {
         request.value.active = newValue.active;
         request.value.accessLevel = Number(newValue.accessLevel) || 1;
         request.value.phoneNumber = newValue.phoneNumber || '';
+        (request.value as any).agencyId = (newValue as any).agencyId || null;
 
       }
     }, { immediate: true });
+
+    const agencies = computed(() => {
+      const list = (store.state as any).agencies.agencies || [];
+      return list.map((a: any) => ({ id: a.id, name: a.name }));
+    });
+
+    onMounted(async () => {
+      try {
+        await store.dispatch('agencies/loadAgencies');
+      } catch (e) {
+      }
+    });
 
     const submitForm = async () => {
       try {
@@ -193,6 +225,9 @@ export default {
           if (Number(request.value.accessLevel) !== Number(user.value.accessLevel)) {
             updatedFields.authLevel = Number(request.value.accessLevel);
           }
+          if ((request.value as any).agencyId !== (user.value as any).agencyId) {
+            updatedFields.agencyId = (request.value as any).agencyId;
+          }
 
           try {
             response = await store.dispatch('users/updateUser', { userId: user.value.id, data: updatedFields });
@@ -209,7 +244,7 @@ export default {
             password: request.value.password || 'DefaultPassword123!',
             authLevel: Number(request.value.accessLevel),
             operation: 0,
-            agencyId: null,
+            agencyId: (request.value as any).agencyId || null,
           };
 
           response = await store.dispatch('users/createUser', createData);
@@ -241,6 +276,7 @@ export default {
       submitForm,
       user,
       accessLevels,
+      agencies,
       isLoading,
       validateEmail,
       validatePhoneNumber,
