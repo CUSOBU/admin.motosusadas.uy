@@ -68,8 +68,8 @@
 
 <script lang="ts">
 import { reactive } from 'vue';
-import Heading from "../../components/Heading.vue";
-import SplitView from "../../components/SplitView.vue";
+import Heading from "../components/Heading.vue";
+import SplitView from "../components/SplitView.vue";
 import UsersTable from "./Table.vue";
 import { useRouter } from 'vue-router';
 

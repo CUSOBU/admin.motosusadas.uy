@@ -40,7 +40,7 @@
 
 <script lang="ts">
 import router from "@/router";
-import Datatable from "../../components/Datatable.vue";
+import Datatable from "../components/Datatable.vue";
 import { computed, onMounted, ref, watch } from "vue";
 import { useStore } from 'vuex';
 import RemoveDialog from "./RemoveDialog.vue";

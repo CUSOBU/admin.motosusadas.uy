@@ -115,7 +115,42 @@ export default defineComponent({
         menuItems.push({
           title: 'users',
           icon: 'account-group',
-          to: { name: 'users', path: '/users' },
+          to: 'users',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'locations',
+          icon: 'map-marker',
+          to: 'locations',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'agencies',
+          icon: 'office-building',
+          to: 'agencies',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'brands',
+          icon: 'tag',
+          to: 'brands',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'models',
+          icon: 'shape',
+          to: 'models',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'types',
+          icon: 'sitemap',
+          to: 'types',
           children: []
         });
       }

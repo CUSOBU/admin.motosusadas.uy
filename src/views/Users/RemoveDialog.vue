@@ -9,7 +9,7 @@
 
 <script lang="ts">
 import { useStore } from 'vuex';
-import ConfirmDialog from "../../components/ConfirmDialog.vue";
+import ConfirmDialog from "../components/ConfirmDialog.vue";
 
 export default {
   components: {

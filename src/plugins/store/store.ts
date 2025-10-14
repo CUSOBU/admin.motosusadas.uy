@@ -2,6 +2,11 @@ import { createStore } from "vuex";
 import auth from "./modules/auth";
 import notificator from "./modules/notificator";
 import users from "./modules/users";
+import locations from "./modules/locations";
+import agencies from "./modules/agencies";
+import brands from "./modules/brands";
+import types from "./modules/types";
+import models from "./modules/models";
 
 export interface State {
   isLoading: boolean;
@@ -22,6 +27,11 @@ export default createStore({
     auth,
     notificator,
     users,
+    locations,
+    agencies,
+    brands,
+    types,
+    models,
   },
   state: {
     isLoading: false,
