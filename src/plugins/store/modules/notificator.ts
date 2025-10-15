@@ -34,9 +34,10 @@ const mutations = {
     }
     state.messages = [];
 
+    const translated = i18n.global.t(message) as string;
     const newMessage = {
       id: uuidv4(),
-      message: message,
+      message: translated,
       type: payload.type,
       visible: true,
     };
@@ -157,6 +158,7 @@ function getErrorMessage(errorCode: string): string {
     [ErrorCode.EMAIL_VERIFICATION_EXPIRED]: "errors.email-verification-expired",
     [ErrorCode.VALIDATION_NOT_DESACTIVE_ERROR]: "errors.cannot-deactivate-user",
     [ErrorCode.ACCESS_DENIED]: "errors.access-denied",
+    [ErrorCode.ALREADY_EXISTS]: "errors.already-exists",
   };
 
   return errorMessages[errorCode] || "errors.unexpected";

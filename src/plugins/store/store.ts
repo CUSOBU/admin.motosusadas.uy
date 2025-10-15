@@ -1,6 +1,15 @@
 import { createStore } from "vuex";
 import auth from "./modules/auth";
 import notificator from "./modules/notificator";
+import users from "./modules/users";
+import locations from "./modules/locations";
+import agencies from "./modules/agencies";
+import brands from "./modules/brands";
+import types from "./modules/types";
+import models from "./modules/models";
+import motorcycles from "./modules/motorcycles";
+import contacts from "./modules/contacts";
+import contactInfo from "./modules/contactInfo";
 
 export interface State {
   isLoading: boolean;
@@ -20,6 +29,15 @@ export default createStore({
   modules: {
     auth,
     notificator,
+    users,
+    locations,
+    agencies,
+    brands,
+    types,
+    models,
+    motorcycles,
+    contacts,
+    contactInfo,
   },
   state: {
     isLoading: false,

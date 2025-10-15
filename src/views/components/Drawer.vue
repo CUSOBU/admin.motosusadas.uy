@@ -33,7 +33,15 @@
           </v-list-group>
           <v-list-item v-else :class="{ 'v-list-item--active': item.active }" link
             :to="typeof item.to === 'object' ? item.to : { name: item.to }" variant="plain">
-            <v-list-item-title>{{ $t(item.title) }}</v-list-item-title>
+            <v-list-item-title>
+              {{ $t(item.title) }}
+              <v-badge v-if="item.title === 'contact-messages' && unreadCount > 0" 
+                       :content="unreadCount" 
+                       color="error" 
+                       inline 
+                       class="ml-2">
+              </v-badge>
+            </v-list-item-title>
           </v-list-item>
         </v-list>
       </div>
@@ -41,10 +49,10 @@
         <v-container class="pa-0 ma-0">
           <v-row class="ml-2 mb-3 align-center">
             <v-col cols="9" class="d-flex align-center">
-              <ProfileDialog :user="user" />
+              <ProfileDialog />
             </v-col>
             <v-col cols="3">
-              <confirm-dialog :show="dialogVisible" @update:show="dialogVisible = $event" @confirmed="logout">
+              <confirm-dialog :model-value="dialogVisible" @update:model-value="val => dialogVisible = val" @confirmed="logout">
                 <template #activator="{ props }">
                   <v-btn elevation="0" class="px-20 py-10" block v-bind="props" v-on:click="dialogVisible = true">
                     <v-icon color="#E63946">mdi-logout</v-icon>
@@ -70,6 +78,7 @@ import { useDisplay } from 'vuetify';
 import { useRoute, useRouter, RouteLocationNormalizedLoaded } from 'vue-router';
 import ConfirmDialog from './ConfirmDialog.vue';
 import ProfileDialog from './ProfileDialog.vue';
+import Roles from '@/constants/Roles';
 
 interface RouteInfo {
   name: string;
@@ -91,7 +100,6 @@ export default defineComponent({
   },
   setup() {
     const store = useStore();
-    const user = ref(null);
     const { lgAndUp } = useDisplay();
     const hoverIndex = ref(-1);
 
@@ -104,14 +112,90 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
 
-    const items = ref<MenuItem[]>([
-      { 
-        title: 'examples', 
-        icon: 'cube-outline', 
-        to: { name: 'example-table', path: '/example-table' }, 
-        children: [] 
-      },
-    ]);
+    const currentUser = computed(() => store.getters['auth/currentUser']);
+    const isAdmin = computed(() => currentUser.value?.authLevel === Roles.Admin);
+    const unreadCount = computed(() => store.state.contacts?.unreadCount || 0);
+
+    const items = computed(() => {
+      const menuItems: MenuItem[] = [
+      ];
+
+      // Motorcycles is available for admins and agency users
+      menuItems.push({
+        title: 'motorcycles',
+        icon: 'motorbike',
+        to: 'motorcycles',
+        children: []
+      });
+
+  if (isAdmin.value) {
+        // Insights is only for admins
+        menuItems.push({
+          title: 'insights',
+          icon: 'chart-bar',
+          to: 'insights',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'users',
+          icon: 'account-group',
+          to: 'users',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'locations',
+          icon: 'map-marker',
+          to: 'locations',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'agencies',
+          icon: 'office-building',
+          to: 'agencies',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'brands',
+          icon: 'tag',
+          to: 'brands',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'models',
+          icon: 'shape',
+          to: 'models',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'types',
+          icon: 'sitemap',
+          to: 'types',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'contact-messages',
+          icon: 'email-multiple',
+          to: 'contact-messages',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'contact-info',
+          icon: 'information',
+          to: 'contact-info',
+          children: []
+        });
+      }
+
+      return menuItems;
+    });
 
     const isActive = (route: RouteLocationNormalizedLoaded, item: MenuItem): boolean => {
       if (item.to && typeof item.to === 'object' && 'path' in item.to) {
@@ -144,6 +228,10 @@ export default defineComponent({
       }
     );
 
+    watch(items, () => {
+      setActiveItem();
+    });
+
     setActiveItem();
 
     const logout = async () => {
@@ -156,7 +244,6 @@ export default defineComponent({
     };
 
     return {
-      user,
       hoverIndex,
       openDrawer,
       lgAndUp,
@@ -164,6 +251,7 @@ export default defineComponent({
       logout,
       dialogVisible,
       closeDrawer,
+      unreadCount,
     };
   },
 });

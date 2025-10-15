@@ -5,11 +5,8 @@ module.exports = {
   publicPath: "",
   devServer: {
     historyApiFallback: true,
-    // disableHostCheck: false,
     compress: true,
-    server: {
-      type: "https",
-    },
+    // HTTPS deshabilitado - usa HTTP en desarrollo (la API usa HTTPS)
   },
   transpileDependencies: ["vuetify"],
   pluginOptions: {

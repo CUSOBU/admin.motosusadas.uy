@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue';
+import { defineComponent, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 
 export default defineComponent({
@@ -35,6 +35,11 @@ export default defineComponent({
     const hideMessage = (id: string) => {
       store.dispatch('notificator/remove', id);
     };
+
+    onMounted(() => {
+      store.dispatch('contactInfo/loadContactInfo').catch(() => {
+      });
+    });
 
     return {
       currentMessage,
