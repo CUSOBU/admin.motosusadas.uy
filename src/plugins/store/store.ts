@@ -8,6 +8,8 @@ import brands from "./modules/brands";
 import types from "./modules/types";
 import models from "./modules/models";
 import motorcycles from "./modules/motorcycles";
+import contacts from "./modules/contacts";
+import contactInfo from "./modules/contactInfo";
 
 export interface State {
   isLoading: boolean;
@@ -34,6 +36,8 @@ export default createStore({
     types,
     models,
     motorcycles,
+    contacts,
+    contactInfo,
   },
   state: {
     isLoading: false,

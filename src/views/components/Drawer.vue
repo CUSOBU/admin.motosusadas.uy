@@ -33,7 +33,15 @@
           </v-list-group>
           <v-list-item v-else :class="{ 'v-list-item--active': item.active }" link
             :to="typeof item.to === 'object' ? item.to : { name: item.to }" variant="plain">
-            <v-list-item-title>{{ $t(item.title) }}</v-list-item-title>
+            <v-list-item-title>
+              {{ $t(item.title) }}
+              <v-badge v-if="item.title === 'contact-messages' && unreadCount > 0" 
+                       :content="unreadCount" 
+                       color="error" 
+                       inline 
+                       class="ml-2">
+              </v-badge>
+            </v-list-item-title>
           </v-list-item>
         </v-list>
       </div>
@@ -106,6 +114,7 @@ export default defineComponent({
 
     const currentUser = computed(() => store.getters['auth/currentUser']);
     const isAdmin = computed(() => currentUser.value?.authLevel === Roles.Admin);
+    const unreadCount = computed(() => store.state.contacts?.unreadCount || 0);
 
     const items = computed(() => {
       const menuItems: MenuItem[] = [
@@ -169,6 +178,20 @@ export default defineComponent({
           to: 'types',
           children: []
         });
+
+        menuItems.push({
+          title: 'contact-messages',
+          icon: 'email-multiple',
+          to: 'contact-messages',
+          children: []
+        });
+
+        menuItems.push({
+          title: 'contact-info',
+          icon: 'information',
+          to: 'contact-info',
+          children: []
+        });
       }
 
       return menuItems;
@@ -228,6 +251,7 @@ export default defineComponent({
       logout,
       dialogVisible,
       closeDrawer,
+      unreadCount,
     };
   },
 });

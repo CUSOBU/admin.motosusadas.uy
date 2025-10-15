@@ -394,6 +394,45 @@ const routes: Array<RouteRecordRaw> = [
           roles: [Roles.Admin, Roles.Agency],
         },
       },
+      {
+        path: "/contact-messages",
+        name: "contact-messages",
+        component: () =>
+          import(/* webpackMode: "lazy" */ "../views/Contact/index.vue"),
+        meta: {
+          title: "contact-messages",
+          auth: true,
+          requiresAdmin: true,
+          roles: [Roles.Admin],
+        },
+      },
+      {
+        path: "/contact-messages/:id",
+        name: "contact-messages-details",
+        component: () =>
+          import(
+            /* webpackMode: "lazy" */ "../views/Contact/ContactDetails.vue"
+          ),
+        meta: {
+          title: "contact-message-details",
+          auth: true,
+          requiresAdmin: true,
+          roles: [Roles.Admin],
+        },
+      },
+
+      {
+        path: "/contact-info",
+        name: "contact-info",
+        component: () =>
+          import(/* webpackMode: "lazy" */ "../views/ContactInfo/Index.vue"),
+        meta: {
+          title: "contact-info",
+          auth: true,
+          requiresAdmin: true,
+          roles: [Roles.Admin],
+        },
+      },
     ],
   },
 ];

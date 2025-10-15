@@ -24,11 +24,12 @@
 
       <!-- Upload section -->
       <div class="upload-section">
-        <div v-if="selectedFile" class="file-selected">
+        <div v-if="selectedFiles && selectedFiles.length" class="file-selected">
           <div class="file-info">
             <v-icon color="primary">mdi-file-image</v-icon>
-            <span class="file-name">{{ selectedFile.name }}</span>
-            <span class="file-size">({{ formatFileSize(selectedFile.size) }})</span>
+            <span class="file-name">{{ selectedFiles[0].name }}</span>
+            <span v-if="selectedFiles.length > 1" class="file-more">+{{ selectedFiles.length - 1 }}</span>
+            <span class="file-size">({{ formatFileSize(selectedFiles[0].size) }})</span>
           </div>
           <v-btn size="small" variant="text" @click="clearSelection">
             <v-icon>mdi-close</v-icon>
@@ -39,26 +40,28 @@
           <v-btn
             variant="outlined"
             color="primary"
-            prepend-icon="mdi-upload"
+            prepend-icon="mdi-paperclip"
             @click="triggerFileInput"
             :disabled="isUploading"
+            class="select-image-btn"
           >
-            {{ $t("select-image") }}
+            <span class="select-image-text">{{ $t("select-image") }}</span>
           </v-btn>
 
           <v-btn
-            v-if="selectedFile"
+            v-if="selectedFiles && selectedFiles.length"
             color="primary"
             @click="uploadImage"
             :loading="isUploading"
           >
-            {{ $t("upload-image") }}
+            {{ multiple ? $t('upload-images') : $t('upload-image') }}
           </v-btn>
         </div>
 
         <input
           ref="fileInput"
           type="file"
+          :multiple="multiple"
           accept="image/*"
           style="display: none"
           @change="onFileSelected"
@@ -118,13 +121,17 @@ export default defineComponent({
       type: Array as PropType<string[]>,
       default: () => ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
     },
+    multiple: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['image-uploaded', 'image-removed'],
   setup(props, { emit }) {
     const { t } = useI18n();
     const store = useStore();
-    const fileInput = ref<HTMLInputElement | null>(null);
-    const selectedFile = ref<File | null>(null);
+  const fileInput = ref<HTMLInputElement | null>(null);
+  const selectedFiles = ref<File[]>([]);
     const isUploading = ref(false);
     const isRemoving = ref(false);
 
@@ -134,46 +141,49 @@ export default defineComponent({
 
     const onFileSelected = (event: Event) => {
       const target = event.target as HTMLInputElement;
-      const file = target.files?.[0];
-      
-      if (file) {
+      const files = target.files ? Array.from(target.files) : [];
+
+      if (!files.length) return;
+
+      for (const file of files) {
         const validation = validateFile(file, {
           maxSize: props.maxSize,
-          allowedTypes: props.allowedTypes
+          allowedTypes: props.allowedTypes,
         });
 
         if (!validation.isValid) {
           store.dispatch('notificator/error', t(validation.error!));
           return;
         }
-        
-        selectedFile.value = file;
       }
+
+      selectedFiles.value = files;
     };
 
     const clearSelection = () => {
-      selectedFile.value = null;
+      selectedFiles.value = [];
       if (fileInput.value) {
         fileInput.value.value = '';
       }
     };
 
     const uploadImage = async () => {
-      if (!selectedFile.value || !props.entityId) return;
+      if ((!selectedFiles.value || selectedFiles.value.length === 0) || !props.entityId) return;
 
       try {
         isUploading.value = true;
-        
-        await props.service.uploadImage(
-          props.entityId,
-          selectedFile.value
-        );
+
+        if (props.multiple) {
+          await (props.service as any).uploadImages(props.entityId, selectedFiles.value);
+        } else {
+          await (props.service as any).uploadImage(props.entityId, selectedFiles.value[0]);
+        }
 
         const updatedEntity = await store.dispatch(`${props.storeModule}/${props.fetchAction}`, props.entityId);
-        
+
         store.dispatch('notificator/success', t('image-uploaded-successfully'));
         emit('image-uploaded', updatedEntity);
-        
+
         clearSelection();
       } catch (error: any) {
         store.dispatch('notificator/errorResponse', error);
@@ -203,7 +213,7 @@ export default defineComponent({
 
     return {
       fileInput,
-      selectedFile,
+      selectedFiles,
       isUploading,
       isRemoving,
       triggerFileInput,

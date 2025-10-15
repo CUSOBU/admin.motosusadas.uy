@@ -40,14 +40,11 @@
 
       <v-container fluid>
         <v-row v-if="motorcycle">
-          <v-col cols="12" md="8">
-            <h4 class="fg-primary">{{ motorcycle.brandName }} {{ motorcycle.modelName }}</h4>
-            <attribute>
-              <template #name>{{ $t("motorcycle-name") }}</template>
-              {{ motorcycle.name }}
-            </attribute>
+          <v-col cols="12" md="10">
+            <h4 class="fg-primary mb-1">{{ motorcycle.brandName }} {{ motorcycle.modelName }}</h4>
+            <p class="text-body-2 text-medium-emphasis mb-0">{{ motorcycle.name }}</p>
           </v-col>
-          <v-col cols="12" md="4" class="action-buttons-container">
+          <v-col cols="12" md="2" class="action-buttons-container">
             <div class="action-buttons">
               <v-btn small text class="fg-blue" @click="motorcycle && edit(motorcycle.id)" v-if="canEdit">
                 <v-icon small>mdi-pencil</v-icon>
@@ -69,74 +66,74 @@
           </v-col>
         </v-row>
 
-        <v-row class="bottom-lined" v-if="motorcycle">
-          <v-col cols="6">
+        <v-row class="bottom-lined info-grid" v-if="motorcycle">
+          <v-col cols="6" md="4">
             <attribute>
               <template #name>{{ $t("brand") }}</template>
               {{ motorcycle.brandName }}
             </attribute>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="6" md="4">
             <attribute>
               <template #name>{{ $t("model") }}</template>
               {{ motorcycle.modelName }}
             </attribute>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="6" md="4">
             <attribute>
               <template #name>{{ $t("type") }}</template>
               {{ motorcycle.typeName }}
             </attribute>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="6" md="4">
             <attribute>
               <template #name>{{ $t("location") }}</template>
               {{ motorcycle.locationName }}
             </attribute>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="6" md="4">
             <attribute>
               <template #name>{{ $t("year") }}</template>
               {{ motorcycle.year }}
             </attribute>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="6" md="4">
             <attribute>
               <template #name>{{ $t("price") }}</template>
               {{ formatPrice(motorcycle.price) }}
             </attribute>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="6" md="4">
             <attribute>
               <template #name>{{ $t("cubic-capacity") }}</template>
               {{ motorcycle.cubicCapacity }} cc
             </attribute>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="6" md="4">
             <attribute>
               <template #name>{{ $t("kms") }}</template>
               {{ formatNumber(motorcycle.kms) }} km
             </attribute>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="6" md="4">
             <attribute>
               <template #name>{{ $t("operation-type") }}</template>
               {{ getOperationLabel(motorcycle.operation) }}
             </attribute>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="6" md="4">
             <attribute>
               <template #name>{{ $t("views") }}</template>
               {{ motorcycle.views }}
             </attribute>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="6" md="4">
             <attribute>
               <template #name>{{ $t("active") }}</template>
               {{ motorcycle.active ? $t("yes") : $t("no") }}
             </attribute>
           </v-col>
-          <v-col cols="6" v-if="motorcycle.agencyName">
+          <v-col cols="6" md="4" v-if="motorcycle.agencyName">
             <attribute>
               <template #name>{{ $t("agency") }}</template>
               {{ motorcycle.agencyName }}
@@ -144,40 +141,89 @@
           </v-col>
         </v-row>
 
-        <!-- Image Management Section -->
+                <!-- Image Management Section -->
         <v-row v-if="motorcycle">
           <v-col>
             <h4 class="fg-primary">{{ $t("images") }}</h4>
           </v-col>
         </v-row>
 
-        <!-- Image Upload Component (Maquetado - Sin funcionalidad) -->
+        <!-- Image Upload Section -->
         <v-row v-if="motorcycle && (canEdit || canDelete)">
           <v-col cols="12">
-            <v-alert type="info" variant="tonal" class="mb-4">
-              {{ $t("image-upload-coming-soon") || "La funcionalidad de carga de imágenes estará disponible próximamente" }}
-            </v-alert>
-            <!-- 
-            <ImageUpload
-              :entity-id="motorcycle.id"
-              :section-title="$t('upload-motorcycle-image')"
-              :section-description="$t('upload-motorcycle-image-description')"
-              :current-image-url="null"
-              :service="motorcycleImageService"
-              store-module="motorcycles"
-              fetch-action="loadMotorcycle"
-              @image-uploaded="onImageUploaded"
-              @image-removed="onImageRemoved"
-            />
-            -->
+            <div class="image-upload-section">
+              
+              <!-- ImageUpload component (supports multiple files) -->
+              <ImageUpload
+                :entityId="motorcycle.id"
+                :service="motorcycleImageService"
+                store-module="motorcycles"
+                fetch-action="loadMotorcycle"
+                :section-title="$t('add-image')"
+                :section-description="$t('upload-images-description')"
+                :multiple="true"
+                @image-uploaded="onImagesUploaded"
+              />
+            </div>
           </v-col>
         </v-row>
 
+        <!-- Existing Images Grid -->
         <v-row v-if="motorcycle && motorcycle.images && motorcycle.images.length > 0">
           <v-col cols="12" md="4" v-for="image in motorcycle.images" :key="image.id">
-            <v-img :src="image.path" aspect-ratio="1.5" cover class="rounded"></v-img>
+            <v-card class="image-card">
+              <v-img
+                :src="image.url ? image.url : buildImageUrl(image.path)"
+                aspect-ratio="1.5"
+                cover
+                class="rounded"
+                @click="openPreview(image.url ? image.url : buildImageUrl(image.path))"
+              ></v-img>
+              <v-card-actions v-if="canEdit || canDelete">
+                <v-spacer></v-spacer>
+                <confirm-dialog
+                  v-model="deleteImageDialog"
+                  @confirmed="executeDeleteImage"
+                >
+                  <template #activator>
+                    <v-btn
+                      color="error"
+                      variant="text"
+                      size="small"
+                      @click="confirmDeleteImage(image.id)"
+                      :loading="deletingImageId === image.id"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                      {{ $t("delete") }}
+                    </v-btn>
+                  </template>
+                  <template #title>
+                    {{ $t("confirm-delete-image") }}
+                  </template>
+                  {{ $t("confirm-delete-image") }}
+                </confirm-dialog>
+              </v-card-actions>
+            </v-card>
           </v-col>
         </v-row>
+
+        <v-row v-else-if="motorcycle">
+          <v-col cols="12">
+            <v-alert type="info" variant="tonal">
+              {{ $t("no-images-yet") }}
+            </v-alert>
+          </v-col>
+        </v-row>
+        <!-- Preview Dialog -->
+        <v-dialog v-model="previewDialog" max-width="800px">
+          <v-card>
+            <v-img :src="previewImageUrl" aspect-ratio="16/9" cover></v-img>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn text @click="previewDialog = false">{{ $t('close') }}</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-container>
     </SplitContent>
   </v-container>
@@ -195,6 +241,9 @@ import Attribute from '@/views/components/Attribute.vue';
 import RemoveDialog from './RemoveDialog.vue';
 import i18n from '@/plugins/i18n';
 import Roles from '@/constants/Roles';
+import motorcycleImageService, { validateImageFile } from '@/services/motorcycleImageService';
+import ConfirmDialog from '../components/ConfirmDialog.vue';
+import ImageUpload from '../components/ImageUpload.vue';
 
 export default {
   components: {
@@ -203,6 +252,8 @@ export default {
     searchMotorcycles,
     Attribute,
     RemoveDialog,
+    ConfirmDialog,
+    ImageUpload,
   },
   setup() {
     const router = useRouter();
@@ -214,6 +265,13 @@ export default {
     const mobileSearchExpanded = ref<number[]>([]);
     const currentUser = computed(() => store.getters["auth/currentUser"]);
     const isAdmin = computed(() => currentUser.value?.authLevel === Roles.Admin);
+
+  // Image upload state handled by ImageUpload component
+    const deletingImageId = ref<string | null>(null);
+    const deleteImageDialog = ref(false);
+    const imageToDelete = ref<string | null>(null);
+  const previewDialog = ref(false);
+  const previewImageUrl = ref<string | null>(null);
 
     const canEdit = computed(() => {
       if (!motorcycle.value) return false;
@@ -281,6 +339,66 @@ export default {
       return new Intl.NumberFormat('es-UY').format(num);
     };
 
+    // Image upload validation
+    // Handler called when child ImageUpload emits 'image-uploaded'
+    const onImagesUploaded = async () => {
+      if (!motorcycle.value) return;
+      await loadMotorcycle(motorcycle.value.id);
+    };
+
+    // Delete image
+    const confirmDeleteImage = (imageId: string) => {
+      imageToDelete.value = imageId;
+      deleteImageDialog.value = true;
+    };
+
+    const executeDeleteImage = async () => {
+      if (!motorcycle.value || !imageToDelete.value) return;
+
+      try {
+        deletingImageId.value = imageToDelete.value;
+        await motorcycleImageService.deleteImage(motorcycle.value.id, imageToDelete.value);
+        
+        // Reload motorcycle to get updated images
+        await loadMotorcycle(motorcycle.value.id);
+        
+        store.dispatch('notificator/success', i18n.global.t('image-deleted-successfully'));
+      } catch (error) {
+        store.dispatch('notificator/errorResponse', error);
+      } finally {
+        deletingImageId.value = null;
+        imageToDelete.value = null;
+      }
+    };
+
+    const buildImageUrl = (path: string) => {
+      if (!path) return '';
+      // Si el backend ya devuelve URL completa, usar image.url. Si no, construir desde origen/apifiles
+      try {
+        // Preferir variable de entorno si existe
+        const apiBase = (import.meta && (import.meta as any).env && (import.meta as any).env.VITE_API_BASE) || window.location.origin;
+        // Si path ya parece una URL completa, devolverla
+        if (path.startsWith('http://') || path.startsWith('https://')) return path;
+        // Construir URL a /api/files/{path}
+        return `${apiBase.replace(/\/$/, '')}/api/files/${path}`;
+      } catch (e) {
+        return `/api/files/${path}`;
+      }
+    };
+
+    const getFilePreview = (file: File): string => {
+      try {
+        return URL.createObjectURL(file);
+      } catch (e) {
+        return '';
+      }
+    };
+
+    const openPreview = (url: string) => {
+      previewImageUrl.value = url;
+      previewDialog.value = true;
+    };
+
     return {
       motorcycle,
       isLoading,
@@ -294,13 +412,23 @@ export default {
       canEdit,
       canDelete,
       mobileSearchExpanded,
+      deletingImageId,
+      confirmDeleteImage,
+      executeDeleteImage,
+      buildImageUrl,
+      motorcycleImageService,
+      deleteImageDialog,
+      imageToDelete,
+      previewDialog,
+      previewImageUrl,
+      openPreview,
+      onImagesUploaded,
     };
   },
 };
 </script>
 
 <style scoped>
-
 .mobile-search-title {
   background-color: #f6f9f6;
   color: #2d6283;
@@ -328,14 +456,15 @@ export default {
 
 .action-buttons-container {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-end;
 }
 
 .action-buttons {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: center;
   justify-content: flex-end;
   margin-top: 0;
 }
@@ -349,6 +478,7 @@ export default {
   .action-buttons {
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap; /* allow wrap on smaller screens */
   }
 }
 
@@ -356,6 +486,10 @@ export default {
   border-bottom: 1px solid #e0e0e0;
   padding-bottom: 16px;
   margin-bottom: 16px;
+}
+
+.info-grid {
+  row-gap: 4px;
 }
 
 .fg-primary {
@@ -378,5 +512,91 @@ export default {
 
 .rounded {
   border-radius: 8px;
+}
+
+.image-upload-section {
+  background-color: #f6f9f6;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.image-card {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.image-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.file-activator-container {
+  width: 100%;
+  max-width: 480px;
+}
+
+.fake-input-with-preview {
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  min-height: 56px;
+}
+
+.thumbnails-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.thumbnail-item {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.more-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1976D2;
+  padding: 0 8px;
+}
+
+.fake-input {
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+}
+
+.file-placeholder {
+  color: rgba(0,0,0,0.5);
+  font-size: 14px;
+}
+
+.file-attach-btn {
+  min-width: 140px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
 }
 </style>

@@ -157,22 +157,15 @@
               <v-col cols="12" class="py-0 mt-4" v-if="motorcycle">
                 <v-divider class="mb-4"></v-divider>
                 <h4 class="mb-3">{{ $t("images") }}</h4>
-                <v-alert type="info" variant="tonal" class="mb-4">
-                  {{ $t("image-upload-coming-soon") || "La funcionalidad de carga de imágenes estará disponible próximamente" }}
-                </v-alert>
-                <!-- 
-                <ImageUpload
-                  :entity-id="motorcycle.id"
-                  :section-title="$t('upload-motorcycle-image')"
-                  :section-description="$t('upload-motorcycle-image-description')"
-                  :current-image-url="null"
-                  :service="motorcycleImageService"
-                  store-module="motorcycles"
-                  fetch-action="loadMotorcycle"
-                  @image-uploaded="onImageUploaded"
-                  @image-removed="onImageRemoved"
-                />
-                -->
+                <p class="text-caption mb-3">{{ $t("manage-images-in-details") }}</p>
+                <v-btn
+                  variant="outlined"
+                  color="primary"
+                  @click="goToDetails"
+                >
+                  <v-icon left>mdi-image-multiple</v-icon>
+                  {{ $t("go-to-image-management") }}
+                </v-btn>
               </v-col>
 
               <v-col cols="6">
@@ -428,6 +421,12 @@ export default {
       }
     };
 
+    const goToDetails = () => {
+      if (motorcycle.value) {
+        router.push({ name: 'motorcycles-details', params: { id: motorcycle.value.id } });
+      }
+    };
+
     return {
       request,
       submitForm,
@@ -447,6 +446,7 @@ export default {
       validateCubicCapacity,
       validateKms,
       mobileSearchExpanded,
+      goToDetails,
     };
   },
 }
