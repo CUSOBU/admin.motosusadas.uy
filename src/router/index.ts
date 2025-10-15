@@ -45,6 +45,18 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: "/insights",
+        name: "insights",
+        component: () =>
+          import(/* webpackMode: "lazy" */ "../views/Insights/Index.vue"),
+        meta: {
+          title: "insights",
+          auth: true,
+          requiresAdmin: true,
+          roles: [Roles.Admin],
+        },
+      },
+      {
         path: "/users",
         name: "users",
         component: () =>
@@ -335,6 +347,51 @@ const routes: Array<RouteRecordRaw> = [
           auth: true,
           requiresAdmin: true,
           roles: [Roles.Admin],
+        },
+      },
+      // Motorcycles routes
+      {
+        path: "/motorcycles",
+        name: "motorcycles",
+        component: () =>
+          import(/* webpackMode: "lazy" */ "../views/Motorcycles/Index.vue"),
+        meta: {
+          title: "motorcycles",
+          auth: true,
+          roles: [Roles.Admin, Roles.Agency],
+        },
+      },
+      {
+        path: "/motorcycles/create",
+        name: "motorcycles-create",
+        component: () =>
+          import(/* webpackMode: "lazy" */ "../views/Motorcycles/Form.vue"),
+        meta: {
+          title: "motorcycles-create",
+          auth: true,
+          roles: [Roles.Admin, Roles.Agency],
+        },
+      },
+      {
+        path: "/motorcycles/:id",
+        name: "motorcycles-details",
+        component: () =>
+          import(/* webpackMode: "lazy" */ "../views/Motorcycles/Details.vue"),
+        meta: {
+          title: "motorcycles-details",
+          auth: true,
+          roles: [Roles.Admin, Roles.Agency],
+        },
+      },
+      {
+        path: "/motorcycles/:id/edit",
+        name: "motorcycles-edit",
+        component: () =>
+          import(/* webpackMode: "lazy" */ "../views/Motorcycles/Form.vue"),
+        meta: {
+          title: "motorcycles-edit",
+          auth: true,
+          roles: [Roles.Admin, Roles.Agency],
         },
       },
     ],

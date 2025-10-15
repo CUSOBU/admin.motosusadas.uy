@@ -7,6 +7,7 @@ import agencies from "./modules/agencies";
 import brands from "./modules/brands";
 import types from "./modules/types";
 import models from "./modules/models";
+import motorcycles from "./modules/motorcycles";
 
 export interface State {
   isLoading: boolean;
@@ -32,6 +33,7 @@ export default createStore({
     brands,
     types,
     models,
+    motorcycles,
   },
   state: {
     isLoading: false,

@@ -111,7 +111,23 @@ export default defineComponent({
       const menuItems: MenuItem[] = [
       ];
 
-      if (isAdmin.value) {
+      // Motorcycles is available for admins and agency users
+      menuItems.push({
+        title: 'motorcycles',
+        icon: 'motorbike',
+        to: 'motorcycles',
+        children: []
+      });
+
+  if (isAdmin.value) {
+        // Insights is only for admins
+        menuItems.push({
+          title: 'insights',
+          icon: 'chart-bar',
+          to: 'insights',
+          children: []
+        });
+
         menuItems.push({
           title: 'users',
           icon: 'account-group',

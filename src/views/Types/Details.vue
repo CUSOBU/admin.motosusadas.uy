@@ -2,8 +2,15 @@
   <v-container fluid class="py-0">
     <Heading>
       <template #title>
-        <h2>{{ $t("types-.details") }}</h2>
-        <p>{{ $t("types-.details-sub-heading") }}</p>
+        <div class="d-flex align-center">
+          <v-btn icon variant="text" @click="goBack" class="mr-2">
+            <v-icon>mdi-arrow-left</v-icon>
+          </v-btn>
+          <div>
+            <h2>{{ $t("types-.details") }}</h2>
+            <p>{{ $t("types-.details-sub-heading") }}</p>
+          </div>
+        </div>
       </template>
       <template #actions>&nbsp; </template>
     </Heading>
@@ -94,6 +101,10 @@ export default {
       router.push({ name: 'types-edit', params: { id } });
     };
 
+    const goBack = () => {
+      router.push({ name: 'types' });
+    };
+
     const onRemoved = () => {
       router.push({ name: 'types' });
     };
@@ -103,6 +114,7 @@ export default {
       isLoading,
       dialogVisible,
       edit,
+      goBack,
       onRemoved,
     };
   },

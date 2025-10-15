@@ -14,52 +14,109 @@
     </Heading>
     <SplitView class="mt-3">
       <template #auxiliar>
-        <v-row>
-          <v-col cols="12" class="pb-2">
-            <v-text-field class="simple-search-result" variant="outlined" :label="$t('search')"
-              prepend-inner-icon="mdi-magnify" clearable v-model="filters.keyword">
-            </v-text-field>
-          </v-col>
-        </v-row>
+        <!-- Mobile: All filters in one accordion -->
+        <div class="d-md-none">
+          <v-expansion-panels variant="accordion" v-model="mobileFiltersExpanded">
+            <v-expansion-panel>
+              <v-expansion-panel-title class="mobile-filters-title">
+                <v-icon class="mr-2">mdi-filter-variant</v-icon>
+                <h4>{{ $t("filter-by") }}</h4>
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <v-row>
+                  <v-col cols="12" class="pb-2">
+                    <v-text-field class="simple-search-result" variant="outlined" :label="$t('search')"
+                      prepend-inner-icon="mdi-magnify" clearable v-model="filters.keyword">
+                    </v-text-field>
+                  </v-col>
+                </v-row>
 
-        <v-row>
-          <v-col cols="12" class="pb-2 pt-2">
-            <h4 class="filter-title">{{ $t("filter-by") }}</h4>
-          </v-col>
-        </v-row>
+                <v-row class="filter-section">
+                  <v-col cols="12" class="pb-1">
+                    <h5 class="filter-subtitle">{{ $t("status") }}</h5>
+                  </v-col>
+                  <v-col cols="6" class="checkbox-col">
+                    <v-checkbox v-model="filters.active" :value="null" :label="$t('all')" hide-details density="compact" />
+                  </v-col>
+                  <v-col cols="6" class="checkbox-col">
+                    <v-checkbox v-model="filters.active" :value="true" :label="$t('active')" hide-details density="compact" />
+                  </v-col>
+                  <v-col cols="6" class="checkbox-col">
+                    <v-checkbox v-model="filters.active" :value="false" :label="$t('inactive')" hide-details
+                      density="compact" />
+                  </v-col>
+                </v-row>
 
-        <v-row class="filter-section">
-          <v-col cols="12" class="pb-1">
-            <h5 class="filter-subtitle">{{ $t("status") }}</h5>
-          </v-col>
-          <v-col cols="6" class="checkbox-col">
-            <v-checkbox v-model="filters.active" :value="null" :label="$t('all')" hide-details density="compact" />
-          </v-col>
-          <v-col cols="6" class="checkbox-col">
-            <v-checkbox v-model="filters.active" :value="true" :label="$t('active')" hide-details density="compact" />
-          </v-col>
-          <v-col cols="6" class="checkbox-col">
-            <v-checkbox v-model="filters.active" :value="false" :label="$t('inactive')" hide-details
-              density="compact" />
-          </v-col>
-        </v-row>
+                <v-row class="filter-section">
+                  <v-col cols="12" class="pb-1 pt-2">
+                    <h5 class="filter-subtitle">{{ $t("role") }}</h5>
+                  </v-col>
+                  <v-col cols="6" class="checkbox-col">
+                    <v-checkbox v-model="filters.authLevel" :value="null" :label="$t('all')" hide-details density="compact" />
+                  </v-col>
+                  <v-col cols="6" class="checkbox-col">
+                    <v-checkbox v-model="filters.authLevel" :value="2" :label="$t('roles.admin')" hide-details
+                      density="compact" />
+                  </v-col>
+                  <v-col cols="6" class="checkbox-col">
+                    <v-checkbox v-model="filters.authLevel" :value="1" :label="$t('roles.agency')" hide-details
+                      density="compact" />
+                  </v-col>
+                </v-row>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </div>
 
-        <v-row class="filter-section">
-          <v-col cols="12" class="pb-1 pt-2">
-            <h5 class="filter-subtitle">{{ $t("role") }}</h5>
-          </v-col>
-          <v-col cols="6" class="checkbox-col">
-            <v-checkbox v-model="filters.authLevel" :value="null" :label="$t('all')" hide-details density="compact" />
-          </v-col>
-          <v-col cols="6" class="checkbox-col">
-            <v-checkbox v-model="filters.authLevel" :value="2" :label="$t('roles.admin')" hide-details
-              density="compact" />
-          </v-col>
-          <v-col cols="6" class="checkbox-col">
-            <v-checkbox v-model="filters.authLevel" :value="1" :label="$t('roles.agency')" hide-details
-              density="compact" />
-          </v-col>
-        </v-row>
+        <!-- Desktop: Original layout -->
+        <div class="d-none d-md-block">
+          <v-row>
+            <v-col cols="12" class="pb-2">
+              <v-text-field class="simple-search-result" variant="outlined" :label="$t('search')"
+                prepend-inner-icon="mdi-magnify" clearable v-model="filters.keyword">
+              </v-text-field>
+            </v-col>
+          </v-row>
+
+          <v-row>
+            <v-col cols="12" class="pb-2 pt-2">
+              <h4 class="filter-title">{{ $t("filter-by") }}</h4>
+            </v-col>
+          </v-row>
+
+          <v-row class="filter-section">
+            <v-col cols="12" class="pb-1">
+              <h5 class="filter-subtitle">{{ $t("status") }}</h5>
+            </v-col>
+            <v-col cols="6" class="checkbox-col">
+              <v-checkbox v-model="filters.active" :value="null" :label="$t('all')" hide-details density="compact" />
+            </v-col>
+            <v-col cols="6" class="checkbox-col">
+              <v-checkbox v-model="filters.active" :value="true" :label="$t('active')" hide-details density="compact" />
+            </v-col>
+            <v-col cols="6" class="checkbox-col">
+              <v-checkbox v-model="filters.active" :value="false" :label="$t('inactive')" hide-details
+                density="compact" />
+            </v-col>
+          </v-row>
+
+          <v-row class="filter-section">
+            <v-col cols="12" class="pb-1 pt-2">
+              <h5 class="filter-subtitle">{{ $t("role") }}</h5>
+            </v-col>
+            <v-col cols="6" class="checkbox-col">
+              <v-checkbox v-model="filters.authLevel" :value="null" :label="$t('all')" hide-details density="compact" />
+            </v-col>
+            <v-col cols="6" class="checkbox-col">
+              <v-checkbox v-model="filters.authLevel" :value="2" :label="$t('roles.admin')" hide-details
+                density="compact" />
+            </v-col>
+            <v-col cols="6" class="checkbox-col">
+              <v-checkbox v-model="filters.authLevel" :value="1" :label="$t('roles.agency')" hide-details
+                density="compact" />
+            </v-col>
+          </v-row>
+        </div>
       </template>
       <users-table :search="filters.keyword" :active="filters.active" :auth-level="filters.authLevel" />
     </SplitView>
@@ -67,7 +124,7 @@
 </template>
 
 <script lang="ts">
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import Heading from "../components/Heading.vue";
 import SplitView from "../components/SplitView.vue";
 import UsersTable from "./Table.vue";
@@ -81,6 +138,7 @@ export default {
   },
   setup() {
     const router = useRouter();
+    const mobileFiltersExpanded = ref<number[]>([]);
 
     const filters = reactive({
       keyword: '',
@@ -91,18 +149,32 @@ export default {
     return {
       filters,
       router,
+      mobileFiltersExpanded,
     };
   },
 };
 </script>
 
 <style scoped>
+.mobile-filters-title {
+  background-color: #f6f9f6;
+  color: #2d6283;
+  font-weight: 600;
+  border-radius: 12px !important;
+}
+
+.mobile-filters-title :deep(.v-expansion-panel-title__icon) {
+  color: #2d6283 !important;
+}
+
 .filter-title {
   font-weight: 600;
+  color: #2d6283;
 }
 
 .filter-subtitle {
   font-weight: 500;
+  color: #2d6283;
 }
 
 .checkbox-col {
@@ -126,6 +198,22 @@ export default {
 
 .filter-section {
   margin: 0;
+  background-color: #f6f9f6;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+:deep(.v-expansion-panel) {
+  background-color: #f6f9f6;
+}
+
+:deep(.v-expansion-panel-title) {
+  background-color: #f6f9f6;
+  border-radius: 12px;
+}
+
+:deep(.v-expansion-panel-text__wrapper) {
+  background-color: #f6f9f6;
 }
 
 :deep(.v-row) {
@@ -142,5 +230,22 @@ export default {
 
 .filter-section + .filter-section {
   margin-top: 16px;
+}
+
+/* Altura adicional para la tabla en móviles */
+@media (max-width: 959px) {
+  :deep(.v-data-table) {
+    min-height: 60vh;
+  }
+  
+  :deep(.v-table__wrapper) {
+    min-height: 60vh;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  :deep(.v-expansion-panel) {
+    border-radius: 12px;
+  }
 }
 </style>

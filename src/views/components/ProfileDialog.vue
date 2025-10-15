@@ -8,6 +8,7 @@
         <div class="ml-3">
           <div class="text-subtitle-2 text-dark">{{ displayName }}</div>
           <div class="text-caption text-grey">{{ displayEmail }}</div>
+          <div class="text-caption text-grey" v-if="displayAgency">{{ displayAgency }}</div>
         </div>
       </div>
     </template>
@@ -72,8 +73,9 @@ export default defineComponent({
   const router = useRouter();
 
     const currentUser = computed(() => store.getters['auth/currentUser']);
-    const displayName = computed(() => currentUser.value?.fullName || 'Usuario');
-    const displayEmail = computed(() => currentUser.value?.email || 'usuario@ejemplo.com');
+  const displayName = computed(() => currentUser.value?.fullName || 'Usuario');
+  const displayEmail = computed(() => currentUser.value?.email || 'usuario@ejemplo.com');
+  const displayAgency = computed(() => currentUser.value?.agencyName || '');
     
     const initials = computed(() => {
       const name = displayName.value;
@@ -121,6 +123,7 @@ export default defineComponent({
       currentUser,
       displayName,
       displayEmail,
+      displayAgency,
       initials,
       formatDate,
       doLogout

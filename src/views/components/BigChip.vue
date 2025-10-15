@@ -1,24 +1,23 @@
 <template>
   <div cols="12" sm="4" :class="`big-chip${action ? ' big-chip--action' : ''} big-chip--${type}`">
-    <div>
-      <v-img width="47px" :src="require(`@/assets/${type}-square.svg`)" />
+    <div class="big-chip-icon">
+      <v-icon :color="getIconColor" size="40">{{ getIcon }}</v-icon>
     </div>
     <div>
       <span v-if="money">${{ number }}</span>
       <span v-else>{{ number ?? 0 }}</span>
-      <span class="text-lowercase">
-        {{ description }}
+      <span v-html="description">
       </span>
     </div>
     <div v-if="action" class="big-chip-action">
       <span>{{ $t("view") }}</span>
-      <v-img :src="'@/assets/arrow-right.svg'" />
+      <v-icon>mdi-arrow-right</v-icon>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { RouteParamsRaw } from 'vue-router'
 
@@ -50,7 +49,45 @@ export default defineComponent({
       default: null,
     },
   },
-  setup() {
+  setup(props) {
+    const getIcon = computed(() => {
+      switch (props.type) {
+        case 'primary':
+          return 'mdi-chart-line';
+        case 'info':
+          return 'mdi-information';
+        case 'success':
+          return 'mdi-calendar';
+        case 'warning':
+          return 'mdi-map-marker';
+        case 'danger':
+          return 'mdi-alert-circle';
+        default:
+          return 'mdi-chart-box';
+      }
+    });
+
+    const getIconColor = computed(() => {
+      switch (props.type) {
+        case 'primary':
+          return '#1976d2';
+        case 'info':
+          return '#2196f3';
+        case 'success':
+          return '#0ac229';
+        case 'warning':
+          return '#eacb00';
+        case 'danger':
+          return '#e63946';
+        default:
+          return '#1976d2';
+      }
+    });
+
+    return {
+      getIcon,
+      getIconColor,
+    };
   },
 });
 </script>
@@ -110,6 +147,38 @@ export default defineComponent({
     }
   }
 
+  &.big-chip--primary {
+    color: #1976d2;
+    background: linear-gradient(0deg,
+        rgba(255, 255, 255, 0.88),
+        rgba(255, 255, 255, 0.88)),
+      #1976d2;
+
+    &.big-chip--action:hover {
+      border-color: #1976d2;
+    }
+  }
+
+  &.big-chip--info {
+    color: #2196f3;
+    background: linear-gradient(0deg,
+        rgba(255, 255, 255, 0.88),
+        rgba(255, 255, 255, 0.88)),
+      #2196f3;
+
+    &.big-chip--action:hover {
+      border-color: #2196f3;
+    }
+  }
+
+  .big-chip-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 47px;
+    height: 47px;
+  }
+
   >div:nth-child(2) {
     width: calc(100% - 62px);
 
@@ -128,6 +197,10 @@ export default defineComponent({
 
       &:nth-child(2) {
         margin-top: -5px;
+        strong {
+          font-weight: 700;
+          color: #1a1a1a;
+        }
       }
     }
   }
