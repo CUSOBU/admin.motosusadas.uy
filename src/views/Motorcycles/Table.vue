@@ -21,6 +21,14 @@
           {{ item.views || 0 }}
         </v-chip>
       </template>
+      <template v-slot:item.images="{ item }">
+        <div class="images-column">
+          <v-btn size="small" icon density="compact" class="action-btn images-action-btn" @click="info(item.id)">
+            <v-icon size="24">mdi-image-multiple</v-icon>
+          </v-btn>
+          <span class="images-count">{{ (item.images && item.images.length) || 0 }}</span>
+        </div>
+      </template>
       <template v-slot:item.active="{ item }">
         <span>{{ $t('status') }}</span>
         <v-chip :color="item.active ? 'success' : 'error'" size="small">
@@ -216,6 +224,12 @@ export default {
 
     const headers = computed(() => [
       {
+        title: "",
+        value: "images",
+        align: "start",
+        sortable: false,
+      },
+      {
         title: "Moto",
         value: "name",
         align: "start",
@@ -237,6 +251,12 @@ export default {
         title: "Vistas",
         value: "views",
         align: "start",
+        sortable: false,
+      },
+      {
+        title: "Imágenes",
+        value: "images",
+        align: "center",
         sortable: false,
       },
       {
@@ -334,6 +354,18 @@ export default {
   min-height: 32px;
   padding: 0;
 }
+
+.images-column {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.images-count {
+  font-size: 13px;
+  color: rgba(0,0,0,0.7);
+}
+
 
 :deep(.v-data-table tbody tr td) {
   vertical-align: middle !important;
