@@ -13,9 +13,6 @@
         </div>
       </template>
       <template #actions>
-        <v-chip :color="contact?.read ? 'success' : 'primary'" variant="outlined" v-if="contact">
-          {{ contact.read ? $t("read") : $t("unread") }}
-        </v-chip>
       </template>
     </Heading>
     <v-container fluid>
@@ -27,16 +24,6 @@
           </attribute>
         </v-col>
         <v-col cols="6" class="svg-buttons small-buttons text-right">
-          <v-btn 
-            small 
-            icon 
-            class="pl-0 pr-0 mr-2"
-            :color="contact.read ? 'grey' : 'primary'"
-            @click="toggleReadStatus"
-            :loading="isTogglingStatus"
-          >
-            <v-icon>{{ contact.read ? 'mdi-email-open-outline' : 'mdi-email-alert' }}</v-icon>
-          </v-btn>
           <RemoveDialog :item="contact" @removed="remove"></RemoveDialog>
         </v-col>
       </v-row>
@@ -107,7 +94,6 @@ export default {
     const router = useRouter();
     const route = useRoute();
     const isLoading = ref<boolean>(true);
-    const isTogglingStatus = ref<boolean>(false);
 
     const remove = async () => {
       try {
@@ -136,25 +122,6 @@ export default {
       }
     };
 
-    const toggleReadStatus = async () => {
-      if (!contact.value) return;
-      
-      try {
-        isTogglingStatus.value = true;
-        if (contact.value.read) {
-          await store.dispatch('contacts/markAsUnread', contact.value.id);
-        } else {
-          await store.dispatch('contacts/markAsRead', contact.value.id);
-        }
-        // Reload contact
-        const updatedContact = await store.dispatch('contacts/loadContact', contact.value.id);
-        contact.value = updatedContact;
-      } catch (error) {
-        store.dispatch("notificator/errorResponse", error);
-      } finally {
-        isTogglingStatus.value = false;
-      }
-    };
 
     const goBack = () => {
       router.push({ name: 'contact-messages' });
@@ -195,9 +162,7 @@ export default {
       contact,
       remove,
       isLoading,
-      isTogglingStatus,
       router,
-      toggleReadStatus,
       goBack,
       formatDate,
     };

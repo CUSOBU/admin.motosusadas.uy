@@ -85,6 +85,7 @@
   },
   "errors.invalid-credentials": "Credenciales inválidas",
   "errors.unexpected": "Error inesperado",
+  "errors.internal-error": "Error de conectividad con el servidor",
   "errors.already-exists": "Ya existe un usuario con esos datos",
   "errors.user-not-found": "Usuario no encontrado",
   "users": "Usuarios",

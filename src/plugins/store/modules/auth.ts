@@ -74,7 +74,7 @@ const getters = {
 
 const actions = {
   async loginWithPassword(
-    { commit }: { commit: any },
+    { commit, dispatch }: { commit: any; dispatch: any },
     { email, password }: { email: string; password: string }
   ) {
     try {
@@ -87,6 +87,9 @@ const actions = {
       }
       return Promise.resolve(response);
     } catch (error: any) {
+      try {
+        await dispatch("notificator/errorResponse", error);
+      } catch (e) {}
       return Promise.reject(error);
     }
   },

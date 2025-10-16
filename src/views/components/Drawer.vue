@@ -220,13 +220,26 @@ export default defineComponent({
 
     watch(
       () => route.fullPath,
-      () => {
+      async () => {
         setActiveItem();
         if (!lgAndUp.value) {
           store.commit('setDrawerOpen', false);
         }
+        try {
+          await store.dispatch('contacts/loadUnreadCount');
+        } catch (error) {
+          await store.dispatch('notificator/errorResponse', error);
+        }
       }
     );
+
+    (async () => {
+      try {
+        await store.dispatch('contacts/loadUnreadCount');
+      } catch (error) {
+        await store.dispatch('notificator/errorResponse', error);
+      }
+    })();
 
     watch(items, () => {
       setActiveItem();
