@@ -33,9 +33,9 @@
           </v-list-group>
           <v-list-item v-else :class="{ 'v-list-item--active': item.active }" link
             :to="typeof item.to === 'object' ? item.to : { name: item.to }" variant="plain">
-            <v-list-item-title>
+              <v-list-item-title>
               {{ $t(item.title) }}
-              <v-badge v-if="item.title === 'contact-messages' && unreadCount > 0" 
+              <v-badge v-if="item.title === 'contact-messages' && isAdmin && unreadCount > 0" 
                        :content="unreadCount" 
                        color="error" 
                        inline 
@@ -120,7 +120,6 @@ export default defineComponent({
       const menuItems: MenuItem[] = [
       ];
 
-      // Motorcycles is available for admins and agency users
       menuItems.push({
         title: 'motorcycles',
         icon: 'motorbike',
@@ -129,7 +128,6 @@ export default defineComponent({
       });
 
   if (isAdmin.value) {
-        // Insights is only for admins
         menuItems.push({
           title: 'insights',
           icon: 'chart-bar',
@@ -226,7 +224,9 @@ export default defineComponent({
           store.commit('setDrawerOpen', false);
         }
         try {
-          await store.dispatch('contacts/loadUnreadCount');
+          if (isAdmin.value) {
+            await store.dispatch('contacts/loadUnreadCount');
+          }
         } catch (error) {
           await store.dispatch('notificator/errorResponse', error);
         }
@@ -235,7 +235,9 @@ export default defineComponent({
 
     (async () => {
       try {
-        await store.dispatch('contacts/loadUnreadCount');
+        if (isAdmin.value) {
+          await store.dispatch('contacts/loadUnreadCount');
+        }
       } catch (error) {
         await store.dispatch('notificator/errorResponse', error);
       }

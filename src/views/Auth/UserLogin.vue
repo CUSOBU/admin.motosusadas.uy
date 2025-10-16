@@ -77,10 +77,20 @@ export default defineComponent({
         });
         router.push({ name: 'dashboard' });
       } catch (error: any) {
-        const hasSpecificErrorCode =
-          error?.data?.code || error?.status || error?.code || null;
-        if (!hasSpecificErrorCode) {
-          error.customMessage = 'error_login';
+        const isConnectionError = !error?.status && !error?.data && (
+          error?.message?.includes('fetch') ||
+          error?.message?.includes('network') ||
+          error?.message?.includes('Failed to fetch') ||
+          error instanceof TypeError
+        );
+        if (isConnectionError) {
+          error.customMessage = 'errors.connection-error';
+        } else {
+          const hasSpecificErrorCode =
+            error?.data?.code || error?.status || error?.code || null;
+          if (!hasSpecificErrorCode) {
+            error.customMessage = 'error_login';
+          }
         }
         await store.dispatch('notificator/errorResponse', error);
       } finally {
