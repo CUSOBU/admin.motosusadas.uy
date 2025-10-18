@@ -110,6 +110,18 @@ const actions = {
     }
   },
 
+  async toggleFeatured(
+    { commit }: { commit: any },
+    { id, isFeatured }: { id: string; isFeatured: boolean }
+  ) {
+    try {
+      commit("setLoading", true);
+      await motorcyclesService.toggleFeatured(id, isFeatured);
+    } finally {
+      commit("setLoading", false);
+    }
+  },
+
   async deleteMotorcycle({ commit }: { commit: any }, id: string) {
     try {
       commit("setLoading", true);

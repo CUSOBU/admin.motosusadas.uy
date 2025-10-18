@@ -153,6 +153,23 @@
                 <v-checkbox v-if="motorcycle" v-model="request.active" :label="$t('active')" hide-details class="my-0" />
               </v-col>
 
+              <!-- Featured Toggle (solo admins, modo edición) -->
+              <v-col cols="12" class="py-0 mt-2" v-if="motorcycle && isAdmin">
+                <div class="d-flex align-center">
+                  <v-icon :color="motorcycle.isFeatured ? 'warning' : 'grey'" class="mr-2">mdi-star</v-icon>
+                  <span class="mr-3">{{ $t('featured-motorcycle') }}</span>
+                  <v-btn
+                    :color="motorcycle.isFeatured ? 'warning' : 'grey'"
+                    variant="outlined"
+                    size="small"
+                    @click="toggleFeatured"
+                    :loading="togglingFeatured"
+                  >
+                    {{ motorcycle.isFeatured ? $t('unmark-featured') : $t('mark-featured') }}
+                  </v-btn>
+                </div>
+              </v-col>
+
               <!-- Image Management Section (only for edit mode) -->
               <v-col cols="12" class="py-0 mt-4" v-if="motorcycle">
                 <v-divider class="mb-4"></v-divider>
@@ -213,6 +230,7 @@ interface Motorcycle {
   kms: number;
   operation: number;
   active: boolean;
+  isFeatured: boolean;
 }
 
 const validateYear = (value: number) => {
@@ -288,6 +306,7 @@ export default {
     const motorcycle = ref<Motorcycle | null>(null);
     const route = useRoute();
     const router = useRouter();
+    const togglingFeatured = ref(false);
     
     const operationTypes = ref([
       { value: 0, title: i18n.global.t('operation.sale') },
@@ -427,6 +446,32 @@ export default {
       }
     };
 
+    const toggleFeatured = async () => {
+      if (!motorcycle.value) return;
+      
+      try {
+        togglingFeatured.value = true;
+        const newFeaturedStatus = !motorcycle.value.isFeatured;
+        
+        await store.dispatch('motorcycles/toggleFeatured', {
+          id: motorcycle.value.id,
+          isFeatured: newFeaturedStatus
+        });
+        
+        // Reload the motorcycle to get updated data
+        const updatedMotorcycle = await store.dispatch('motorcycles/loadMotorcycle', motorcycle.value.id);
+        if (updatedMotorcycle) {
+          motorcycle.value = updatedMotorcycle;
+        }
+        
+        store.dispatch('notificator/success', 'succeeded_operation');
+      } catch (error) {
+        await store.dispatch('notificator/errorResponse', error);
+      } finally {
+        togglingFeatured.value = false;
+      }
+    };
+
     return {
       request,
       submitForm,
@@ -447,6 +492,8 @@ export default {
       validateKms,
       mobileSearchExpanded,
       goToDetails,
+      toggleFeatured,
+      togglingFeatured,
     };
   },
 }

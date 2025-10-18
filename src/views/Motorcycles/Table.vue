@@ -2,6 +2,15 @@
   <div class="table-container">
     <datatable :headers="headers" :items="motorcycles" :items-per-page="itemsPerPage" :total-items="total"
       :page="page" @update:options="handleTableOptions" class="v-data-table--in-row-headers" headerless>
+            <template v-slot:item.images="{ item }">
+        <div class="images-column">
+          <v-icon v-if="item.isFeatured" color="warning" size="16" class="mr-1" title="Destacada">mdi-star</v-icon>
+          <v-btn size="small" icon density="compact" class="action-btn images-action-btn" @click="info(item.id)">
+            <v-icon size="24">mdi-image-multiple</v-icon>
+          </v-btn>
+          <span class="images-count">{{ (item.images && item.images.length) || 0 }}</span>
+        </div>
+      </template>
       <template v-slot:item.name="{ item }">
         <span>{{ item.brandName }} {{ item.modelName }}</span>
         <span>{{ item.name }}</span>
@@ -20,14 +29,6 @@
           <v-icon size="small" class="mr-1">mdi-eye</v-icon>
           {{ item.views || 0 }}
         </v-chip>
-      </template>
-      <template v-slot:item.images="{ item }">
-        <div class="images-column">
-          <v-btn size="small" icon density="compact" class="action-btn images-action-btn" @click="info(item.id)">
-            <v-icon size="24">mdi-image-multiple</v-icon>
-          </v-btn>
-          <span class="images-count">{{ (item.images && item.images.length) || 0 }}</span>
-        </div>
       </template>
       <template v-slot:item.active="{ item }">
         <span>{{ $t('status') }}</span>
@@ -251,12 +252,6 @@ export default {
         title: "Vistas",
         value: "views",
         align: "start",
-        sortable: false,
-      },
-      {
-        title: "Imágenes",
-        value: "images",
-        align: "center",
         sortable: false,
       },
       {

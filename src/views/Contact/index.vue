@@ -7,7 +7,7 @@
       </template>
       <template #actions>
         <v-chip color="primary" variant="outlined" v-if="unreadCount > 0">
-          <v-icon left>mdi-email-alert</v-icon>
+          <v-icon left>mdi-email</v-icon>
           {{ unreadCount }} {{ $t("unread") }}
         </v-chip>
       </template>

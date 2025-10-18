@@ -160,6 +160,16 @@ class MotorcyclesService {
   }
 
   /**
+   * Toggle featured status for a motorcycle
+   */
+  async toggleFeatured(id: string, isFeatured: boolean): Promise<void> {
+    await fetchWithAuth(`/api/motorcycles/${id}/featured`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isFeatured }),
+    });
+  }
+
+  /**
    * Delete/deactivate a motorcycle
    */
   async deleteMotorcycle(id: string): Promise<{ message: string }> {
