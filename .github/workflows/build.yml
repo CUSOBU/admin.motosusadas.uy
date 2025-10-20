@@ -1,0 +1,78 @@
+name: Staging Build & Deploy
+on:
+  push:
+    branches: [ft-deploy]
+jobs:
+  deploy:
+    permissions:
+      contents: write
+      id-token: write
+    name: Build and Push to ECR
+    runs-on: ubuntu-latest
+    steps:
+      - name: git-checkout
+        uses: actions/checkout@v3
+      - name: Create .env file
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_NODE_ENV: "production"
+          envkey_VUE_APP_API_URL: ${{secrets.STAGING_HOST}}
+          envkey_VUE_APP_FETCH_TIMEOUT: 60
+          envkey_VUE_APP_I18N_LOCALE: es
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "yarn"
+      - name: Install all dependencies
+        run: yarn
+      - name: Build
+        run: yarn build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Automatic Tagging of Releases
+        id: increment-git-tag
+        run: |
+          bash ./bash/git_update.sh -v patch
+
+      - name: Build, Tag, and Push the Image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: com.conexen.admin
+          IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: notifications-frontend
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_MESSAGE: "🚀🚀🚀 Conexen admin staging build completed successfully. ${{ github.event.head_commit.message }}"
+          SLACK_TITLE: Enduser staging admin deployment completed
+          SLACK_USERNAME: rtCamp
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      - name: Slack Failed Notification
+        if: always() && failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: notifications-frontend
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_MESSAGE: ":bomb::bomb::bomb: Conexen admin staging deployment failed. ${{ github.event.head_commit.message }}"
+          SLACK_TITLE: Enduser staging admin deployment failed
+          SLACK_USERNAME: rtCamp
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
