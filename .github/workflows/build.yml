@@ -16,7 +16,7 @@ jobs:
         uses: SpicyPizza/create-envfile@v2.0
         with:
           envkey_NODE_ENV: "production"
-          envkey_VUE_APP_API_URL: ${{secrets.STAGING_HOST}}
+          envkey_VUE_APP_API_URL: ${{secrets.PRODUCTION_HOST}}
           envkey_VUE_APP_FETCH_TIMEOUT: 60
           envkey_VUE_APP_I18N_LOCALE: es
       - uses: actions/setup-node@v3
