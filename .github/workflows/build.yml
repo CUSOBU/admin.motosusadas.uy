@@ -1,0 +1,70 @@
+name: Build & Deploy
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    permissions:
+      contents: write
+      id-token: write
+    name: Build and Push to ECR
+    runs-on: ubuntu-latest
+    steps:
+      - name: git-checkout
+        uses: actions/checkout@v3
+      - name: Create .env file
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_NODE_ENV: "production"
+          envkey_VUE_APP_API_URL: ${{secrets.PRODUCTION_HOST}}
+          envkey_VUE_APP_FETCH_TIMEOUT: 60
+          envkey_VUE_APP_I18N_LOCALE: es
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "yarn"
+      - name: Install all dependencies
+        run: yarn
+      - name: Build
+        run: yarn build
+
+      - name: Deploy build folder to deploy branch
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+          # Create a temporary directory to push from
+          mkdir temp-deploy
+          cp -R dist/* temp-deploy/
+
+          cd temp-deploy
+          git init
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git checkout -b deploy
+
+          # Commit and force push
+          git add .
+          git commit -m "Deploy build from commit ${{ github.sha }}"
+          git push origin deploy --force
+
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: notifications-frontend
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_MESSAGE: "🚀🚀🚀 Motos usadas admin build completed successfully. ${{ github.event.head_commit.message }}"
+          SLACK_TITLE: Enduser staging admin deployment completed
+          SLACK_USERNAME: rtCamp
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      - name: Slack Failed Notification
+        if: always() && failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: notifications-frontend
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_MESSAGE: ":bomb::bomb::bomb: Motos usadas admin staging deployment failed. ${{ github.event.head_commit.message }}"
+          SLACK_TITLE: Enduser staging admin deployment failed
+          SLACK_USERNAME: rtCamp
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
