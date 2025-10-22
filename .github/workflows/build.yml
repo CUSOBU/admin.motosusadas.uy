@@ -28,32 +28,24 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_IDbash }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Automatic Tagging of Releases
-        id: increment-git-tag
+      - name: Deploy build folder to deploy branch
         run: |
-          bash ./versioning.sh -v patch
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Build, Tag, and Push the Image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: com.conexen.admin
-          IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          # Create a temporary directory to push from
+          mkdir temp-deploy
+          cp -R dist/* temp-deploy/
+
+          cd temp-deploy
+          git init
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git checkout -b deploy
+
+          # Commit and force push
+          git add .
+          git commit -m "Deploy build from commit ${{ github.sha }}"
+          git push origin deploy --force
 
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
@@ -61,7 +53,7 @@ jobs:
           SLACK_CHANNEL: notifications-frontend
           SLACK_COLOR: ${{ job.status }}
           SLACK_ICON: https://github.com/rtCamp.png?size=48
-          SLACK_MESSAGE: "🚀🚀🚀 Conexen admin staging build completed successfully. ${{ github.event.head_commit.message }}"
+          SLACK_MESSAGE: "🚀🚀🚀 Motos usadas admin build completed successfully. ${{ github.event.head_commit.message }}"
           SLACK_TITLE: Enduser staging admin deployment completed
           SLACK_USERNAME: rtCamp
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
@@ -72,7 +64,7 @@ jobs:
           SLACK_CHANNEL: notifications-frontend
           SLACK_COLOR: ${{ job.status }}
           SLACK_ICON: https://github.com/rtCamp.png?size=48
-          SLACK_MESSAGE: ":bomb::bomb::bomb: Conexen admin staging deployment failed. ${{ github.event.head_commit.message }}"
+          SLACK_MESSAGE: ":bomb::bomb::bomb: Motos usadas admin staging deployment failed. ${{ github.event.head_commit.message }}"
           SLACK_TITLE: Enduser staging admin deployment failed
           SLACK_USERNAME: rtCamp
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
