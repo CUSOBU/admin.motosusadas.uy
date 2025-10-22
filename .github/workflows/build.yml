@@ -1,7 +1,7 @@
 name: Staging Build & Deploy
 on:
   push:
-    branches: [ft-deploy]
+    branches: [main]
 jobs:
   deploy:
     permissions:
