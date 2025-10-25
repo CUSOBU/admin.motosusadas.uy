@@ -8,13 +8,15 @@
         <div class="ml-3">
           <div class="text-subtitle-2 text-dark">{{ displayName }}</div>
           <div class="text-caption text-grey">{{ displayEmail }}</div>
-          <div class="text-caption text-grey" v-if="displayAgency">{{ displayAgency }}</div>
         </div>
       </div>
     </template>
-    <v-card>
+    <v-card color="white" class="profile-card">
       <v-card-title class="text-h5">
         {{ $t('profile') }}
+        <v-btn icon text="true" elevation="0" class="clear-button" @click="dialog = false">
+          <v-icon max-width="20px">mdi-close</v-icon>
+        </v-btn>
       </v-card-title>
       <v-card-text>
         <div class="d-flex flex-column align-center mb-4">
@@ -25,14 +27,6 @@
           <p class="text-grey">{{ displayEmail }}</p>
           <v-divider class="my-4 w-100"></v-divider>
           <div class="w-100">
-            <div class="d-flex justify-space-between mb-2">
-              <span class="text-grey-darken-1">{{ $t('role') }}:</span>
-              <span class="font-weight-medium">{{ roleLabel }}</span>
-            </div>
-            <div class="d-flex justify-space-between mb-2" v-if="currentUser?.agencyName">
-              <span class="text-grey-darken-1">{{ $t('agency') }}:</span>
-              <span class="font-weight-medium">{{ currentUser.agencyName }}</span>
-            </div>
             <div class="d-flex justify-space-between mb-2" v-if="currentUser?.active !== undefined">
               <span class="text-grey-darken-1">{{ $t('status') }}:</span>
               <v-chip :color="currentUser.active ? 'success' : 'error'" size="small">
@@ -47,11 +41,9 @@
         </div>
       </v-card-text>
       <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn color="primary" variant="text" @click="dialog = false">
-          {{ $t('close') }}
-        </v-btn>
-        <v-btn color="error" variant="text" @click="doLogout">
+        <v-spacer />
+        <v-btn color="error" variant="tonal" @click="doLogout" aria-label="logout">
+          <v-icon left small>mdi-logout</v-icon>
           {{ $t('logout') }}
         </v-btn>
       </v-card-actions>
@@ -63,8 +55,6 @@
 import { defineComponent, ref, computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import Roles from '@/constants/Roles';
-import i18n from '@/plugins/i18n';
 
 export default defineComponent({
   setup() {
@@ -86,12 +76,6 @@ export default defineComponent({
       return name.substring(0, 2).toUpperCase();
     });
 
-    const roleLabel = computed(() => {
-      const level = currentUser.value?.authLevel;
-      if (level === Roles.Admin) return i18n.global.t('roles.admin');
-      if (level === Roles.Agency) return i18n.global.t('roles.agency');
-      return '';
-    });
 
     const formatDate = (dateString: string) => {
       try {
@@ -135,5 +119,34 @@ export default defineComponent({
 <style scoped>
 .cursor-pointer {
   cursor: pointer;
+}
+
+.clear-button {
+  position: absolute;
+  border: 0cap !important;
+  top: 12px;
+  right: 16px;
+  background-color: transparent;
+}
+
+.profile-card {
+  box-shadow: 0px 40px 80px rgba(0, 0, 0, 0.04);
+  border-radius: 24px !important;
+  padding: 20px 32px;
+}
+
+.profile-card .v-card__title {
+  color: #000000;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 120%;
+  padding-bottom: 8px;
+}
+
+.profile-card .v-card__text {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  color: #1a1a1a;
 }
 </style>

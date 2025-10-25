@@ -15,7 +15,7 @@
       <template #actions>&nbsp; </template>
     </Heading>
 
-    <SplitContent v-if="!isLoading" :hide-auxiliar="!location">
+  <SplitContent v-show="!isLoading" :hide-auxiliar="!location">
       <template #auxiliar>
         <search-types />
       </template>
@@ -23,7 +23,6 @@
       <v-container fluid>
         <v-row v-if="location">
           <v-col>
-            <h4 class="fg-primary">{{ $t("location") }}</h4>
             <attribute>
               <template #name>{{ $t("name") }}</template>
               {{ location.name }}

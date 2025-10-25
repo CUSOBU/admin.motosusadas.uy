@@ -8,6 +8,7 @@ import brands from "./modules/brands";
 import types from "./modules/types";
 import models from "./modules/models";
 import motorcycles from "./modules/motorcycles";
+import sellerVehicles from "./modules/sellerVehicles";
 import contacts from "./modules/contacts";
 import contactInfo from "./modules/contactInfo";
 
@@ -36,6 +37,7 @@ export default createStore({
     types,
     models,
     motorcycles,
+    sellerVehicles,
     contacts,
     contactInfo,
   },

@@ -4,7 +4,7 @@
       <v-col cols="8" sm="4" class="heading-title">
         <slot name="title">
           <h2>{{ $t("dashboard") }}</h2>
-          <p>{{ $t("dashboard_welcome") }}</p>
+          <p>{{ $t("dashboard-welcome") }}</p>
         </slot>
       </v-col>
       <v-col cols="4" sm="8" class="heading-actions">

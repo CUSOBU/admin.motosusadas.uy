@@ -1,8 +1,10 @@
+
 <template>
   <div class="table-container">
-    <datatable :headers="headers" :items="motorcycles" :items-per-page="itemsPerPage" :total-items="total"
-      :page="page" @update:options="handleTableOptions" class="v-data-table--in-row-headers" headerless>
-            <template v-slot:item.images="{ item }">
+    <datatable :headers="headers" :items="sellerVehicles" :total="total" :page="page" :items-per-page="itemsPerPage"
+      @update:options="handleTableOptions" :loading="loading" class="v-data-table--in-row-headers" headerless>
+
+      <template v-slot:item.images="{ item }">
         <div class="images-column">
           <v-icon v-if="item.isFeatured" color="warning" size="16" class="mr-1" title="Destacada">mdi-star</v-icon>
           <v-btn size="small" icon density="compact" class="action-btn images-action-btn" @click="info(item.id)">
@@ -11,34 +13,32 @@
           <span class="images-count">{{ (item.images && item.images.length) || 0 }}</span>
         </div>
       </template>
+
       <template v-slot:item.name="{ item }">
         <span>{{ item.brandName }} {{ item.modelName }}</span>
         <span>{{ item.name }}</span>
       </template>
+
       <template v-slot:item.year="{ item }">
         <span>{{ $t('year') }}</span>
         <span>{{ item.year }}</span>
       </template>
+
       <template v-slot:item.price="{ item }">
         <span>{{ $t('price') }}</span>
         <span>{{ formatPrice(item.price) }}</span>
       </template>
-      <template v-slot:item.views="{ item }">
-        <span>{{ $t('views') }}</span>
-        <v-chip color="primary" size="small">
-          <v-icon size="small" class="mr-1">mdi-eye</v-icon>
-          {{ item.views || 0 }}
-        </v-chip>
-      </template>
-      <template v-slot:item.active="{ item }">
+
+      <template v-slot:item.status="{ item }">
         <span>{{ $t('status') }}</span>
-        <v-chip :color="item.active ? 'success' : 'error'" size="small">
-          {{ item.active ? $t('active') : $t('inactive') }}
+        <v-chip :color="getStatusColor(item.status)" size="small">
+          {{ getStatusText(item.status) }}
         </v-chip>
       </template>
-      <template v-slot:item.agencyName="{ item }">
-        <span>{{ $t('agency') }}</span>
-        <span>{{ item.agencyName || '-' }}</span>
+
+      <template v-slot:item.sellerName="{ item }">
+        <span>{{ $t('seller') }}</span>
+        <span>{{ item.sellerName || '-' }}</span>
       </template>
 
       <template v-slot:item.actions="{ item }">
@@ -46,15 +46,16 @@
           <v-btn size="small" icon density="compact" class="action-btn" @click="info(item.id)">
             <v-icon size="20">mdi-information-outline</v-icon>
           </v-btn>
-          <v-btn size="small" icon density="compact" class="action-btn" @click="edit(item.id)">
+          <v-btn size="small" icon density="compact" class="action-btn" @click="edit(item.id)" v-if="isAdmin">
             <v-icon color="primary" size="20">mdi-circle-edit-outline</v-icon>
           </v-btn>
-          <v-btn size="small" icon density="compact" class="action-btn" @click="openRemoveDialog(item.id)" v-if="canDelete(item)">
+          <v-btn size="small" icon density="compact" class="action-btn" @click="openRemoveDialog(item.id)" v-if="isAdmin">
             <v-icon color="error" size="20">mdi-delete-outline</v-icon>
           </v-btn>
           <RemoveDialog :item="item" :show="dialogVisibleId === item.id" @removed="reload" @update:show="val => onDialogUpdate(val, item.id)" />
         </div>
       </template>
+
     </datatable>
   </div>
 </template>
@@ -67,6 +68,7 @@ import { useStore } from 'vuex';
 import RemoveDialog from "./RemoveDialog.vue";
 import Roles from "@/constants/Roles";
 import i18n from "@/plugins/i18n";
+import { SellerVehicleStatus } from "@/models/seller-vehicle.model";
 
 export default {
   components: {
@@ -78,8 +80,8 @@ export default {
       type: String,
       default: "",
     },
-    active: {
-      type: [Boolean, null] as any,
+    status: {
+      type: [Number, null] as any,
       default: null
     },
     brandId: {
@@ -95,10 +97,6 @@ export default {
       default: null
     },
     locationId: {
-      type: [String, null] as any,
-      default: null
-    },
-    agencyId: {
       type: [String, null] as any,
       default: null
     },
@@ -140,22 +138,22 @@ export default {
     const store = useStore();
     const page = ref(1);
     const itemsPerPage = ref(10);
-    const motorcycles = computed(() => store.state.motorcycles.motorcycles || []);
-    const total = computed(() => store.state.motorcycles.total || 0);
+    const sellerVehicles = computed(() => store.state.sellerVehicles.sellerVehicles || []);
+    const total = computed(() => store.state.sellerVehicles.total || 0);
+    const loading = computed(() => store.state.sellerVehicles.loading || false);
     const dialogVisibleId = ref<string | null>(null);
     const currentUser = computed(() => store.getters["auth/currentUser"]);
     const isAdmin = computed(() => currentUser.value?.authLevel === Roles.Admin);
 
-    const loadMotorcycles = async (options: any = {}) => {
+    const loadSellerVehicles = async (options: any = {}) => {
       try {
         const params = {
           search: props.search || null,
-          active: props.active,
+          status: props.status,
           brandId: props.brandId,
           modelId: props.modelId,
           typeId: props.typeId,
           locationId: props.locationId,
-          agencyId: props.agencyId,
           minPrice: props.minPrice,
           maxPrice: props.maxPrice,
           minYear: props.minYear,
@@ -168,7 +166,12 @@ export default {
           pageSize: options.itemsPerPage || itemsPerPage.value,
         };
 
-        await store.dispatch('motorcycles/loadMotorcycles', params);
+        // Admin can see all, agency only approved
+        if (isAdmin.value) {
+          await store.dispatch('sellerVehicles/loadAllSellerVehicles', params);
+        } else {
+          await store.dispatch('sellerVehicles/loadApprovedSellerVehicles', params);
+        }
       } catch (error) {
         store.dispatch('notificator/errorResponse', error);
       }
@@ -177,17 +180,16 @@ export default {
     const handleTableOptions = (options: any) => {
       page.value = options.page;
       itemsPerPage.value = options.itemsPerPage;
-      loadMotorcycles(options);
+      loadSellerVehicles(options);
     };
 
     watch([
       () => props.search,
-      () => props.active,
+      () => props.status,
       () => props.brandId,
       () => props.modelId,
       () => props.typeId,
       () => props.locationId,
-      () => props.agencyId,
       () => props.minPrice,
       () => props.maxPrice,
       () => props.minYear,
@@ -198,14 +200,14 @@ export default {
       () => props.maxCubicCapacity
     ], () => {
       page.value = 1;
-      loadMotorcycles({
+      loadSellerVehicles({
         page: page.value,
         itemsPerPage: itemsPerPage.value
       });
     });
 
     onMounted(() => {
-      loadMotorcycles({
+      loadSellerVehicles({
         page: page.value,
         itemsPerPage: itemsPerPage.value
       });
@@ -237,20 +239,15 @@ export default {
         sortable: false,
       },
       {
-        title: "Vistas",
-        value: "views",
-        align: "start",
-        sortable: false,
-      },
-      {
         title: "Estado",
-        value: "active",
+        value: "status",
         align: "start",
         sortable: false,
       },
+      // Only show seller column for admin users
       ...(isAdmin.value ? [{
-        title: "Agencia",
-        value: "agencyName",
+        title: "Vendedor",
+        value: "sellerName",
         align: "start",
         sortable: false,
       }] : []),
@@ -269,19 +266,42 @@ export default {
       }).format(price);
     };
 
-    const canDelete = (item: any) => {
-      // Admin can delete any motorcycle
-      // Agency user can only delete their own motorcycles
-      if (isAdmin.value) return true;
-      return item.agencyId === currentUser.value?.agencyId;
+    const getStatusColor = (status: SellerVehicleStatus) => {
+      switch (status) {
+        case SellerVehicleStatus.Pending:
+          return 'warning';
+        case SellerVehicleStatus.Approved:
+          return 'success';
+        case SellerVehicleStatus.Rejected:
+          return 'error';
+        case SellerVehicleStatus.Contacted:
+          return 'info';
+        default:
+          return 'grey';
+      }
+    };
+
+    const getStatusText = (status: SellerVehicleStatus) => {
+      switch (status) {
+        case SellerVehicleStatus.Pending:
+          return i18n.global.t('status-pending');
+        case SellerVehicleStatus.Approved:
+          return i18n.global.t('status-approved');
+        case SellerVehicleStatus.Rejected:
+          return i18n.global.t('status-rejected');
+        case SellerVehicleStatus.Contacted:
+          return i18n.global.t('status-contacted');
+        default:
+          return 'Unknown';
+      }
     };
 
     const edit = (id: string) => {
-      router.push({ name: 'motorcycles-edit', params: { id } });
+      router.push({ name: 'seller-vehicles-edit', params: { id } });
     };
 
     const info = (id: string) => {
-      router.push({ name: 'motorcycles-details', params: { id } });
+      router.push({ name: 'seller-vehicles-details', params: { id } });
     };
 
     const openRemoveDialog = (id: string) => {
@@ -294,19 +314,22 @@ export default {
 
     return {
       headers,
-      motorcycles,
+      sellerVehicles,
       total,
       page,
       itemsPerPage,
+      loading,
       handleTableOptions,
       edit,
       info,
-      reload: loadMotorcycles,
+      reload: loadSellerVehicles,
       formatPrice,
-      canDelete,
+      getStatusColor,
+      getStatusText,
       dialogVisibleId,
       openRemoveDialog,
       onDialogUpdate,
+      isAdmin,
     };
   }
 };

@@ -4,7 +4,6 @@ export interface User {
   fullName: string;
   authLevel: number;
   phoneNumber?: string;
-  operation: number;
   agencyId: string;
   agencyName: string;
   active: boolean;

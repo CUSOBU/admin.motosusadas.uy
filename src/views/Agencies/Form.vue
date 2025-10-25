@@ -7,7 +7,7 @@
       </template>
       <template #actions>&nbsp; </template>
     </Heading>
-  <SplitContent v-if="!isLoading" :hide-auxiliar="!agency">
+  <SplitContent v-show="!isLoading" :hide-auxiliar="!agency">
       <template #auxiliar>
         <search-agencies />
       </template>

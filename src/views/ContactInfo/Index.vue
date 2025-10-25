@@ -71,8 +71,7 @@ export default {
   },
   setup() {
     const store = useStore();
-    const form = ref<any>(null);
-    const valid = ref(false);
+  const form = ref<any>(null);
     const isSaving = ref(false);
 
     const formData = ref<UpdateContactInfoRequest>({
@@ -104,11 +103,9 @@ export default {
     };
 
     const onSubmit = async () => {
-      if (!valid.value) return;
-
       try {
         isSaving.value = true;
-  await store.dispatch('contactInfo/updateContactInfo', formData.value);
+        const result = await store.dispatch('contactInfo/updateContactInfo', formData.value);
         store.dispatch('notificator/success', i18n.global.t('contact-info-updated-successfully'));
       } catch (error) {
         store.dispatch('notificator/errorResponse', error);
@@ -123,7 +120,6 @@ export default {
 
     return {
       form,
-      valid,
       isSaving,
       formData,
       required,

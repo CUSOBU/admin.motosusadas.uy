@@ -394,6 +394,43 @@ const routes: Array<RouteRecordRaw> = [
           roles: [Roles.Admin, Roles.Agency],
         },
       },
+      // Seller Vehicles routes
+      {
+        path: "/seller-vehicles",
+        name: "seller-vehicles",
+        component: () =>
+          import(/* webpackMode: "lazy" */ "../views/SellerVehicles/Index.vue"),
+        meta: {
+          title: "seller-vehicles",
+          auth: true,
+          roles: [Roles.Admin, Roles.Agency],
+        },
+      },
+      {
+        path: "/seller-vehicles/:id",
+        name: "seller-vehicles-details",
+        component: () =>
+          import(
+            /* webpackMode: "lazy" */ "../views/SellerVehicles/Details.vue"
+          ),
+        meta: {
+          title: "seller-vehicle-details",
+          auth: true,
+          roles: [Roles.Admin, Roles.Agency],
+        },
+      },
+      {
+        path: "/seller-vehicles/:id/edit",
+        name: "seller-vehicles-edit",
+        component: () =>
+          import(/* webpackMode: "lazy" */ "../views/SellerVehicles/Form.vue"),
+        meta: {
+          title: "edit-seller-vehicle",
+          auth: true,
+          requiresAdmin: true,
+          roles: [Roles.Admin],
+        },
+      },
       {
         path: "/contact-messages",
         name: "contact-messages",

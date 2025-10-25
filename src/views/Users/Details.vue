@@ -15,7 +15,7 @@
       <template #actions>&nbsp; </template>
     </Heading>
 
-    <SplitContent v-if="!isLoading" :hide-auxiliar="!user">
+  <SplitContent v-show="!isLoading" :hide-auxiliar="!user">
       <template #auxiliar>
         <search-users />
       </template>
