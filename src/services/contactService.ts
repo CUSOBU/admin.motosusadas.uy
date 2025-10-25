@@ -31,6 +31,16 @@ async function fetchWithAuth(path: string, options: RequestInit = {}) {
   });
 
   if (!res.ok) {
+    // Handle 401 Unauthorized - logout and redirect to login
+    if (res.status === 401) {
+      Cookies.remove("auth-token");
+      window.location.href = "/login";
+      const err = new ApiError("Unauthorized");
+      err.status = 401;
+      err.data = "Unauthorized";
+      throw err;
+    }
+
     const err = new ApiError("API error");
     err.status = res.status;
     try {
@@ -139,4 +149,3 @@ class ContactService {
 }
 
 export default new ContactService();
-

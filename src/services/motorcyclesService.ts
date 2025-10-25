@@ -34,6 +34,16 @@ async function fetchWithAuth(path: string, options: RequestInit = {}) {
   });
 
   if (!res.ok) {
+    // Handle 401 Unauthorized - logout and redirect to login
+    if (res.status === 401) {
+      Cookies.remove("auth-token");
+      window.location.href = "/login";
+      const err = new ApiError("Unauthorized");
+      err.status = 401;
+      err.data = "Unauthorized";
+      throw err;
+    }
+
     const err = new ApiError("API error");
     err.status = res.status;
     try {
@@ -72,11 +82,7 @@ class MotorcyclesService {
     if (filters.typeId) queryParams.append("typeId", filters.typeId);
     if (filters.locationId)
       queryParams.append("locationId", filters.locationId);
-    if (filters.userId) queryParams.append("userId", filters.userId);
     if (filters.agencyId) queryParams.append("agencyId", filters.agencyId);
-    if (filters.operation !== null && filters.operation !== undefined) {
-      queryParams.append("operation", filters.operation.toString());
-    }
     if (filters.minYear !== null && filters.minYear !== undefined) {
       queryParams.append("minYear", filters.minYear.toString());
     }
@@ -164,7 +170,7 @@ class MotorcyclesService {
    */
   async toggleFeatured(id: string, isFeatured: boolean): Promise<void> {
     await fetchWithAuth(`/api/motorcycles/${id}/featured`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify({ isFeatured }),
     });
   }

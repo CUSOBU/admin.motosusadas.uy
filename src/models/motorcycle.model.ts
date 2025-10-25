@@ -14,13 +14,12 @@ export interface Motorcycle {
   typeName: string;
   locationId: string;
   locationName: string;
-  userId: string;
-  agencyName: string | null;
+  agencyId: string;
+  agencyName: string;
   year: number;
   price: number;
   cubicCapacity: number;
   kms: number;
-  operation: number;
   views: number;
   active: boolean;
   images: MotorcycleImage[];
@@ -32,12 +31,11 @@ export interface CreateMotorcycleRequest {
   modelId: string;
   typeId: string;
   locationId: string;
-  userId: string;
+  agencyId: string;
   year: number;
   price: number;
   cubicCapacity: number;
   kms: number;
-  operation: number;
 }
 
 export interface UpdateMotorcycleRequest extends CreateMotorcycleRequest {
@@ -50,9 +48,7 @@ export interface MotorcycleFilterRequest {
   modelId?: string | null;
   typeId?: string | null;
   locationId?: string | null;
-  userId?: string | null;
   agencyId?: string | null;
-  operation?: number | null;
   minYear?: number | null;
   maxYear?: number | null;
   minPrice?: number | null;
@@ -122,10 +118,4 @@ export interface SearchStatsResponse {
   topTypes: TypeSearchItem[];
   topLocations: LocationSearchItem[];
   topYears: YearSearchItem[];
-}
-
-export enum OperationType {
-  Sale = 0,
-  Rent = 1,
-  Both = 2,
 }

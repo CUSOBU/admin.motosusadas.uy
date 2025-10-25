@@ -235,28 +235,6 @@
                     </v-expansion-panel-text>
                   </v-expansion-panel>
 
-                  <!-- User Filter (if admin) -->
-                  <v-expansion-panel v-if="isAdmin">
-                    <v-expansion-panel-title class="filter-panel-title">
-                      <h5 class="filter-subtitle">{{ $t("assigned-user") }}</h5>
-                    </v-expansion-panel-title>
-                    <v-expansion-panel-text class="filter-panel-content">
-                      <v-row class="filter-section">
-                        <v-col cols="12" class="py-0">
-                          <v-select
-                            v-model="filters.userId"
-                            :items="users"
-                            item-title="fullName"
-                            item-value="id"
-                            variant="outlined"
-                            :label="$t('assigned-user')"
-                            clearable
-                          ></v-select>
-                        </v-col>
-                      </v-row>
-                    </v-expansion-panel-text>
-                  </v-expansion-panel>
-
                   <!-- Kms Range Filter -->
                   <v-expansion-panel>
                     <v-expansion-panel-title class="filter-panel-title">
@@ -543,28 +521,6 @@
             </v-expansion-panel-text>
           </v-expansion-panel>
 
-          <!-- User Filter (if admin) -->
-          <v-expansion-panel v-if="isAdmin">
-            <v-expansion-panel-title class="filter-panel-title">
-              <h5 class="filter-subtitle">{{ $t("assigned-user") }}</h5>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text class="filter-panel-content">
-              <v-row class="filter-section">
-                <v-col cols="12" class="py-0">
-                  <v-select
-                    v-model="filters.userId"
-                    :items="users"
-                    item-title="fullName"
-                    item-value="id"
-                    variant="outlined"
-                    :label="$t('assigned-user')"
-                    clearable
-                  ></v-select>
-                </v-col>
-              </v-row>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-
           <!-- Kms Range Filter -->
           <v-expansion-panel>
             <v-expansion-panel-title class="filter-panel-title">
@@ -632,12 +588,10 @@
       <motorcycles-table
         :search="filters.search"
         :active="filters.active"
-        :operation="filters.operation"
         :brand-id="filters.brandId"
         :model-id="filters.modelId"
         :type-id="filters.typeId"
         :location-id="filters.locationId"
-        :user-id="filters.userId"
         :agency-id="filters.agencyId"
         :min-price="filters.minPrice"
         :max-price="filters.maxPrice"
@@ -678,19 +632,16 @@ export default {
     const types = computed(() => store.state.types.types || []);
     const locations = computed(() => store.state.locations.locations || []);
     const agencies = computed(() => store.state.agencies.agencies || []);
-    const users = computed(() => store.state.users.users || []);
 
     const mobileFiltersExpanded = ref<number[]>([]);
 
     const filters = reactive({
       search: '',
       active: null as boolean | null,
-      operation: null as number | null,
       brandId: null as string | null,
       modelId: null as string | null,
       typeId: null as string | null,
       locationId: null as string | null,
-      userId: null as string | null,
       agencyId: null as string | null,
       minPrice: null as number | null,
       maxPrice: null as number | null,
@@ -723,7 +674,6 @@ export default {
         
         if (isAdmin.value) {
           await store.dispatch('agencies/loadAgencies', {});
-          await store.dispatch('users/loadUsers', {});
         }
       } catch (error) {
         console.error('Error loading filters data:', error);
@@ -733,12 +683,10 @@ export default {
     const resetFilters = () => {
       filters.search = '';
       filters.active = null;
-      filters.operation = null;
       filters.brandId = null;
       filters.modelId = null;
       filters.typeId = null;
       filters.locationId = null;
-      filters.userId = null;
       filters.agencyId = null;
       filters.minPrice = null;
       filters.maxPrice = null;
@@ -769,7 +717,6 @@ export default {
       types,
       locations,
       agencies,
-      users,
       resetFilters,
       handleNumberInput,
       mobileFiltersExpanded,

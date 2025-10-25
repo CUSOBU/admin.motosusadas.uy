@@ -127,9 +127,16 @@ export default defineComponent({
         children: []
       });
 
+      menuItems.push({
+        title: 'seller-vehicles',
+        icon: 'moped',
+        to: 'seller-vehicles',
+        children: []
+      });
+
   if (isAdmin.value) {
         menuItems.push({
-          title: 'insights',
+          title: 'Perspectivas',
           icon: 'chart-bar',
           to: 'insights',
           children: []

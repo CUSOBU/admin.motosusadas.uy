@@ -15,7 +15,7 @@
       <template #actions>&nbsp; </template>
     </Heading>
 
-    <SplitContent v-if="!isLoading" :hide-auxiliar="!model">
+  <SplitContent v-show="!isLoading" :hide-auxiliar="!model">
       <template #auxiliar>
         <search-models />
       </template>
@@ -23,14 +23,9 @@
       <v-container fluid>
         <v-row v-if="model">
           <v-col>
-            <h4 class="fg-primary">{{ $t("model") }}</h4>
             <attribute>
               <template #name>{{ $t("name") }}</template>
               {{ model.name }}
-            </attribute>
-            <attribute>
-              <template #name>{{ $t("brand") }}</template>
-              {{ model.brand?.name || '-' }}
             </attribute>
           </v-col>
           <v-col cols="6" class="svg-buttons small-buttons text-right">

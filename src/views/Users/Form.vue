@@ -7,7 +7,7 @@
       </template>
       <template #actions>&nbsp; </template>
     </Heading>
-    <SplitContent v-if="!isLoading" :hide-auxiliar="!user">
+  <SplitContent v-show="!isLoading" :hide-auxiliar="!user">
       <template #auxiliar>
         <search-users />
       </template>
@@ -243,7 +243,6 @@ export default {
             phoneNumber: request.value.phoneNumber,
             password: request.value.password || 'DefaultPassword123!',
             authLevel: Number(request.value.accessLevel),
-            operation: 0,
             agencyId: (request.value as any).agencyId || null,
           };
 

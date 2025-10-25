@@ -39,13 +39,13 @@
                 <p class="mb-5">{{ $t("motorcycles-.basic-information-text") }}</p>
               </v-col>
               <v-col cols="12" class="py-0">
-                <Field v-model="request.name" name="name" rules="required" v-slot="{ field, errors, value }">
+                <Field v-model="request.name" name="name" :rules="validateName" v-slot="{ field, errors, value }">
                   <v-text-field v-bind="field" :model-value="value" variant="outlined" :error-messages="errors"
                     :label="$t('motorcycle-name')" />
                 </Field>
               </v-col>
               <v-col cols="12" md="6" class="py-0">
-                <Field v-model="request.brandId" name="brandId" rules="required" v-slot="{ field, errors, value }">
+                <Field v-model="request.brandId" name="brandId" :rules="validateBrand" v-slot="{ field, errors, value }">
                   <v-select
                     v-bind="field"
                     :model-value="value"
@@ -60,7 +60,7 @@
                 </Field>
               </v-col>
               <v-col cols="12" md="6" class="py-0">
-                <Field v-model="request.modelId" name="modelId" rules="required" v-slot="{ field, errors, value }">
+                <Field v-model="request.modelId" name="modelId" :rules="validateModel" v-slot="{ field, errors, value }">
                   <v-select
                     v-bind="field"
                     :model-value="value"
@@ -75,7 +75,7 @@
                 </Field>
               </v-col>
               <v-col cols="12" md="6" class="py-0">
-                <Field v-model="request.typeId" name="typeId" rules="required" v-slot="{ field, errors, value }">
+                <Field v-model="request.typeId" name="typeId" :rules="validateType" v-slot="{ field, errors, value }">
                   <v-select
                     v-bind="field"
                     :model-value="value"
@@ -89,7 +89,7 @@
                 </Field>
               </v-col>
               <v-col cols="12" md="6" class="py-0">
-                <Field v-model="request.locationId" name="locationId" rules="required" v-slot="{ field, errors, value }">
+                <Field v-model="request.locationId" name="locationId" :rules="validateLocation" v-slot="{ field, errors, value }">
                   <v-select
                     v-bind="field"
                     :model-value="value"
@@ -127,24 +127,16 @@
                     :label="$t('kms')" type="number" />
                 </Field>
               </v-col>
-              <v-col cols="12" class="py-0">
-                <Field v-model.number="request.operation" name="operation" rules="required"
-                  v-slot="{ field, errors, value }">
-                  <v-select v-bind="field" :model-value="value" variant="outlined" :label="$t('operation-type')"
-                    :error-messages="errors" :items="operationTypes" item-text="title" item-value="value">
-                  </v-select>
-                </Field>
-              </v-col>
               <v-col cols="12" class="py-0" v-if="isAdmin">
-                <Field v-model="request.userId" name="userId" rules="required" v-slot="{ field, errors, value }">
+                <Field v-model="request.agencyId" name="agencyId" rules="required" v-slot="{ field, errors, value }">
                   <v-select
                     v-bind="field"
                     :model-value="value"
-                    :items="agencyUsers"
-                    item-title="fullName"
+                    :items="agencies"
+                    item-title="name"
                     item-value="id"
                     variant="outlined"
-                    :label="$t('assigned-user')"
+                    :label="$t('agency')"
                     :error-messages="errors"
                   ></v-select>
                 </Field>
@@ -223,54 +215,112 @@ interface Motorcycle {
   modelId: string;
   typeId: string;
   locationId: string;
-  userId: string;
+  agencyId: string;
   year: number;
   price: number;
   cubicCapacity: number;
   kms: number;
-  operation: number;
   active: boolean;
   isFeatured: boolean;
 }
 
 const validateYear = (value: number) => {
-  if (!value) {
-    return i18n.global.t('year-required');
-  }
   const currentYear = new Date().getFullYear();
-  if (value < 1900 || value > currentYear + 1) {
-    return i18n.global.t('year-invalid', { min: 1900, max: currentYear + 1 });
+  const min = 1900;
+  const max = currentYear + 1;
+
+  if (value === null || value === undefined || (typeof value === 'string' && value === '')) {
+    return `El año debe estar entre ${min} y ${max}`;
   }
+
+  if (!Number.isInteger(value) || value < min || value > max) {
+    return `El año debe estar entre ${min} y ${max}`;
+  }
+
   return true;
 };
 
 const validatePrice = (value: number) => {
-  if (!value) {
-    return i18n.global.t('price-required');
+  const max = 10000000;
+
+  if (value === null || value === undefined || (typeof value === 'string' && value === '')) {
+    return 'El precio debe ser mayor a 0';
   }
-  if (value <= 0 || value > 10000000) {
-    return i18n.global.t('price-invalid', { max: 10000000 });
+
+  if (!Number.isFinite(value) || value <= 0) {
+    return 'El precio debe ser mayor a 0';
   }
+
+  if (value > max) {
+    return 'El precio no puede exceder $10.000.000';
+  }
+
   return true;
 };
 
 const validateCubicCapacity = (value: number) => {
-  if (!value) {
-    return i18n.global.t('cubic-capacity-required');
+  const max = 5000;
+
+  if (value === null || value === undefined || (typeof value === 'string' && value === '')) {
+    return 'La cilindrada debe ser mayor a 0';
   }
-  if (value <= 0 || value > 5000) {
-    return i18n.global.t('cubic-capacity-invalid', { max: 5000 });
+
+  if (!Number.isFinite(value) || value <= 0) {
+    return 'La cilindrada debe ser mayor a 0';
   }
+
+  if (value > max) {
+    return 'La cilindrada no puede exceder 5000cc';
+  }
+
   return true;
 };
 
 const validateKms = (value: number) => {
-  if (value === null || value === undefined) {
-    return i18n.global.t('kms-required');
+  const max = 500000;
+
+  if (value === null || value === undefined || (typeof value === 'string' && value === '')) {
+    // allow 0, but empty should be treated as 0 by user; instruct if negative
+    return true;
   }
-  if (value < 0 || value > 500000) {
-    return i18n.global.t('kms-invalid', { max: 500000 });
+
+  if (!Number.isFinite(value) || value < 0) {
+    return 'Los kilómetros no pueden ser negativos';
   }
+
+  if (value > max) {
+    return 'Los kilómetros no pueden exceder 500.000';
+  }
+
+  return true;
+};
+
+// Custom validators for text and GUID fields to match backend messages
+const validateName = (value: string) => {
+  if (!value || !value.trim()) return 'El nombre es requerido';
+  const len = value.trim().length;
+  if (len < 3) return 'El nombre debe tener al menos 3 caracteres';
+  if (len > 255) return 'El nombre no puede exceder 255 caracteres';
+  return true;
+};
+
+const validateBrand = (value: string) => {
+  if (!value || !value.trim()) return 'La marca es requerida';
+  return true;
+};
+
+const validateModel = (value: string) => {
+  if (!value || !value.trim()) return 'El modelo es requerido';
+  return true;
+};
+
+const validateType = (value: string) => {
+  if (!value || !value.trim()) return 'El tipo es requerido';
+  return true;
+};
+
+const validateLocation = (value: string) => {
+  if (!value || !value.trim()) return 'La ubicación es requerida';
   return true;
 };
 
@@ -294,12 +344,11 @@ export default {
       modelId: '',
       typeId: '',
       locationId: '',
-      userId: currentUser.value?.id || '',
+      agencyId: currentUser.value?.agencyId || '',
       year: new Date().getFullYear(),
       price: 0,
       cubicCapacity: 0,
       kms: 0,
-      operation: 0,
       active: true,
     });
 
@@ -307,21 +356,12 @@ export default {
     const route = useRoute();
     const router = useRouter();
     const togglingFeatured = ref(false);
-    
-    const operationTypes = ref([
-      { value: 0, title: i18n.global.t('operation.sale') },
-      { value: 1, title: i18n.global.t('operation.rent') },
-      { value: 2, title: i18n.global.t('operation.both') },
-    ]);
 
     const brands = computed(() => store.state.brands.brands || []);
     const models = computed(() => store.state.models.models || []);
     const types = computed(() => store.state.types.types || []);
     const locations = computed(() => store.state.locations.locations || []);
-    const agencyUsers = computed(() => {
-      const users = store.state.users.users || [];
-      return users.filter((u: any) => u.authLevel === Roles.Agency);
-    });
+    const agencies = computed(() => store.state.agencies.agencies || []);
 
     const filteredModels = computed(() => {
       if (!request.value.brandId) return [];
@@ -357,12 +397,11 @@ export default {
         request.value.modelId = newValue.modelId;
         request.value.typeId = newValue.typeId;
         request.value.locationId = newValue.locationId;
-        request.value.userId = newValue.userId;
+        request.value.agencyId = newValue.agencyId;
         request.value.year = newValue.year;
         request.value.price = newValue.price;
         request.value.cubicCapacity = newValue.cubicCapacity;
         request.value.kms = newValue.kms;
-        request.value.operation = newValue.operation;
         request.value.active = newValue.active;
       }
     }, { immediate: true });
@@ -377,7 +416,7 @@ export default {
         ]);
         
         if (isAdmin.value) {
-          await store.dispatch('users/loadUsers', { authLevel: Roles.Agency });
+          await store.dispatch('agencies/loadAgencies', {});
         }
       } catch (e) {
         console.error('Error loading form data:', e);
@@ -394,12 +433,11 @@ export default {
             modelId: request.value.modelId,
             typeId: request.value.typeId,
             locationId: request.value.locationId,
-            userId: request.value.userId,
+            agencyId: request.value.agencyId,
             year: request.value.year,
             price: request.value.price,
             cubicCapacity: request.value.cubicCapacity,
             kms: request.value.kms,
-            operation: request.value.operation,
             active: request.value.active,
           };
 
@@ -420,12 +458,11 @@ export default {
             modelId: request.value.modelId,
             typeId: request.value.typeId,
             locationId: request.value.locationId,
-            userId: request.value.userId,
+            agencyId: request.value.agencyId,
             year: request.value.year,
             price: request.value.price,
             cubicCapacity: request.value.cubicCapacity,
             kms: request.value.kms,
-            operation: request.value.operation,
           };
 
           response = await store.dispatch('motorcycles/createMotorcycle', createData);
@@ -476,12 +513,11 @@ export default {
       request,
       submitForm,
       motorcycle,
-      operationTypes,
       brands,
       models,
       types,
       locations,
-      agencyUsers,
+      agencies,
       filteredModels,
       onBrandChange,
       isLoading,
