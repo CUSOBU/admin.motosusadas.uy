@@ -224,78 +224,75 @@ interface Motorcycle {
   isFeatured: boolean;
 }
 
-const validateYear = (value: number) => {
+const toNumber = (value: any): number => {
+  if (value === null || value === undefined || value === '') return NaN;
+  return typeof value === 'number' ? value : Number(value);
+};
+
+const validateYear = (value: any) => {
   const currentYear = new Date().getFullYear();
   const min = 1900;
   const max = currentYear + 1;
 
-  if (value === null || value === undefined || (typeof value === 'string' && value === '')) {
+  const n = toNumber(value);
+  if (!Number.isFinite(n)) {
     return `El año debe estar entre ${min} y ${max}`;
   }
 
-  if (!Number.isInteger(value) || value < min || value > max) {
+  if (!Number.isInteger(n) || n < min || n > max) {
     return `El año debe estar entre ${min} y ${max}`;
   }
 
   return true;
 };
 
-const validatePrice = (value: number) => {
+const validatePrice = (value: any) => {
   const max = 10000000;
+  const n = toNumber(value);
 
-  if (value === null || value === undefined || (typeof value === 'string' && value === '')) {
+  if (!Number.isFinite(n) || n <= 0) {
     return 'El precio debe ser mayor a 0';
   }
 
-  if (!Number.isFinite(value) || value <= 0) {
-    return 'El precio debe ser mayor a 0';
-  }
-
-  if (value > max) {
+  if (n > max) {
     return 'El precio no puede exceder $10.000.000';
   }
 
   return true;
 };
 
-const validateCubicCapacity = (value: number) => {
+const validateCubicCapacity = (value: any) => {
   const max = 5000;
+  const n = toNumber(value);
 
-  if (value === null || value === undefined || (typeof value === 'string' && value === '')) {
+  if (!Number.isFinite(n) || n <= 0) {
     return 'La cilindrada debe ser mayor a 0';
   }
 
-  if (!Number.isFinite(value) || value <= 0) {
-    return 'La cilindrada debe ser mayor a 0';
-  }
-
-  if (value > max) {
+  if (n > max) {
     return 'La cilindrada no puede exceder 5000cc';
   }
 
   return true;
 };
 
-const validateKms = (value: number) => {
+const validateKms = (value: any) => {
   const max = 500000;
 
-  if (value === null || value === undefined || (typeof value === 'string' && value === '')) {
-    // allow 0, but empty should be treated as 0 by user; instruct if negative
-    return true;
-  }
+  if (value === null || value === undefined || value === '') return true;
 
-  if (!Number.isFinite(value) || value < 0) {
+  const n = toNumber(value);
+  if (!Number.isFinite(n) || n < 0) {
     return 'Los kilómetros no pueden ser negativos';
   }
 
-  if (value > max) {
+  if (n > max) {
     return 'Los kilómetros no pueden exceder 500.000';
   }
 
   return true;
 };
 
-// Custom validators for text and GUID fields to match backend messages
 const validateName = (value: string) => {
   if (!value || !value.trim()) return 'El nombre es requerido';
   const len = value.trim().length;
@@ -485,22 +482,21 @@ export default {
 
     const toggleFeatured = async () => {
       if (!motorcycle.value) return;
-      
+
       try {
         togglingFeatured.value = true;
         const newFeaturedStatus = !motorcycle.value.isFeatured;
-        
+
         await store.dispatch('motorcycles/toggleFeatured', {
           id: motorcycle.value.id,
           isFeatured: newFeaturedStatus
         });
-        
-        // Reload the motorcycle to get updated data
+
         const updatedMotorcycle = await store.dispatch('motorcycles/loadMotorcycle', motorcycle.value.id);
         if (updatedMotorcycle) {
           motorcycle.value = updatedMotorcycle;
         }
-        
+
         store.dispatch('notificator/success', 'succeeded_operation');
       } catch (error) {
         await store.dispatch('notificator/errorResponse', error);
