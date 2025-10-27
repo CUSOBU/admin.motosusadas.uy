@@ -45,17 +45,15 @@ async function fetchWithAuth(
 
 class ContactInfoService {
   async getContactInfo(): Promise<ContactInfo> {
-    const response = await fetchWithAuth("/api/contact-info", {
+    return await fetchWithAuth("/api/contact-info", {
       method: "GET",
     });
-
-    return await response.json();
   }
 
   async updateContactInfo(
     data: UpdateContactInfoRequest
   ): Promise<ContactInfo> {
-    const response = await fetchWithAuth("/api/contact-info", {
+    return await fetchWithAuth("/api/contact-info", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -67,8 +65,6 @@ class ContactInfoService {
         schedule: data.schedule,
       }),
     });
-
-    return await response.json();
   }
 }
 
