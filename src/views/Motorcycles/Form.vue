@@ -38,12 +38,6 @@
                 <h4 class="mt-7">{{ $t("motorcycles-.data") }}</h4>
                 <p class="mb-5">{{ $t("motorcycles-.basic-information-text") }}</p>
               </v-col>
-              <v-col cols="12" class="py-0">
-                <Field v-model="request.name" name="name" :rules="validateName" v-slot="{ field, errors, value }">
-                  <v-text-field v-bind="field" :model-value="value" variant="outlined" :error-messages="errors"
-                    :label="$t('motorcycle-name')" />
-                </Field>
-              </v-col>
               <v-col cols="12" md="6" class="py-0">
                 <Field v-model="request.brandId" name="brandId" :rules="validateBrand" v-slot="{ field, errors, value }">
                   <v-select
@@ -184,7 +178,7 @@
                 </v-btn>
               </v-col>
               <v-col cols="6">
-                <v-btn color="primary" type="submit" :disabled="!meta.valid" elevation="0" block>
+                <v-btn color="primary" type="submit" :disabled="!meta.valid || !request.modelId" elevation="0" block>
                   {{ $t("submit") }}
                 </v-btn>
               </v-col>
@@ -336,7 +330,6 @@ export default {
     const mobileSearchExpanded = ref<number[]>([]);
     
     const request = ref({
-      name: '',
       brandId: '',
       modelId: '',
       typeId: '',
@@ -389,7 +382,6 @@ export default {
 
     watch(motorcycle, (newValue) => {
       if (newValue) {
-        request.value.name = newValue.name;
         request.value.brandId = newValue.brandId;
         request.value.modelId = newValue.modelId;
         request.value.typeId = newValue.typeId;
@@ -425,7 +417,6 @@ export default {
         let response: any;
         if (motorcycle.value) {
           const updateData = {
-            name: request.value.name,
             brandId: request.value.brandId,
             modelId: request.value.modelId,
             typeId: request.value.typeId,
@@ -450,7 +441,6 @@ export default {
           }
         } else {
           const createData = {
-            name: request.value.name,
             brandId: request.value.brandId,
             modelId: request.value.modelId,
             typeId: request.value.typeId,
