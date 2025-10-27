@@ -178,7 +178,7 @@
                 </v-btn>
               </v-col>
               <v-col cols="6">
-                <v-btn color="primary" type="submit" :disabled="!meta.valid" elevation="0" block>
+                <v-btn color="primary" type="submit" :disabled="!meta.valid || !request.modelId" elevation="0" block>
                   {{ $t("submit") }}
                 </v-btn>
               </v-col>
