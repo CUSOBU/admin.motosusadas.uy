@@ -15,8 +15,13 @@
       </template>
 
       <template v-slot:item.name="{ item }">
-        <span>{{ item.brandName }} {{ item.modelName }}</span>
-        <span>{{ item.name }}</span>
+        <div class="motor-name-cell">
+          <span v-if="(item.brandName || item.brand?.name) || (item.modelName || item.model?.name)">
+            {{ (item.brandName || item.brand?.name || '') }} {{ (item.modelName || item.model?.name || '') }}
+          </span>
+          <span v-else class="missing-brand-model">Sin Registro</span>
+          <span class="d-block car-model-name">{{ item.name }}</span>
+        </div>
       </template>
 
       <template v-slot:item.year="{ item }">
@@ -370,6 +375,16 @@ export default {
 .images-count {
   font-size: 13px;
   color: rgba(0,0,0,0.7);
+}
+
+.missing-brand-model {
+  color: #e53935 !important; /* red */
+  font-weight: 600;
+}
+
+.motor-name-cell .car-model-name {
+  color: rgba(0,0,0,0.7);
+  font-size: 14px;
 }
 
 

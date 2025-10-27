@@ -12,8 +12,10 @@
         </div>
       </template>
       <template v-slot:item.name="{ item }">
-        <span>{{ item.brandName }} {{ item.modelName }}</span>
-        <span>{{ item.name }}</span>
+        <div class="motor-name-cell">
+          <span class="d-block car-kms">{{ formatKms(item.kms) }}</span>
+          <span>{{ item.brandName }} {{ item.modelName }}</span>
+        </div>
       </template>
       <template v-slot:item.year="{ item }">
         <span>{{ $t('year') }}</span>
@@ -269,6 +271,17 @@ export default {
       }).format(price);
     };
 
+    const formatKms = (kms: number | null | undefined) => {
+      if (kms === null || kms === undefined) return '-';
+      // allow zero
+      if (typeof kms !== 'number') {
+        const n = Number(kms);
+        if (!Number.isFinite(n)) return '-';
+        kms = n;
+      }
+      return new Intl.NumberFormat('es-UY').format(kms) + ' km';
+    };
+
     const canDelete = (item: any) => {
       // Admin can delete any motorcycle
       // Agency user can only delete their own motorcycles
@@ -303,6 +316,7 @@ export default {
       info,
       reload: loadMotorcycles,
       formatPrice,
+      formatKms,
       canDelete,
       dialogVisibleId,
       openRemoveDialog,
