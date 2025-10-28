@@ -149,9 +149,13 @@ export default {
     const dialogVisibleId = ref<string | null>(null);
     const currentUser = computed(() => store.getters["auth/currentUser"]);
     const isAdmin = computed(() => currentUser.value?.authLevel === Roles.Admin);
+    const isLoading = ref(false);
 
     const loadSellerVehicles = async (options: any = {}) => {
+      if (isLoading.value) return;
+      
       try {
+        isLoading.value = true;
         const params = {
           search: props.search || null,
           status: props.status,
@@ -179,6 +183,8 @@ export default {
         }
       } catch (error) {
         store.dispatch('notificator/errorResponse', error);
+      } finally {
+        isLoading.value = false;
       }
     };
 
@@ -205,13 +211,6 @@ export default {
       () => props.maxCubicCapacity
     ], () => {
       page.value = 1;
-      loadSellerVehicles({
-        page: page.value,
-        itemsPerPage: itemsPerPage.value
-      });
-    });
-
-    onMounted(() => {
       loadSellerVehicles({
         page: page.value,
         itemsPerPage: itemsPerPage.value

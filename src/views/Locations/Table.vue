@@ -51,9 +51,13 @@ export default {
     const itemsPerPage = ref(10);
     const locations = computed(() => store.state.locations.locations || []);
     const dialogVisibleId = ref<string | null>(null);
+    const isLoading = ref(false);
 
     const loadLocations = async (options: any = {}) => {
+      if (isLoading.value) return;
+      
       try {
+        isLoading.value = true;
         const params = {
           search: props.search || null,
         };
@@ -61,6 +65,8 @@ export default {
         await store.dispatch('locations/loadLocations', params);
       } catch (error) {
         store.dispatch('notificator/errorResponse', error);
+      } finally {
+        isLoading.value = false;
       }
     };
 
@@ -71,10 +77,7 @@ export default {
     };
 
     watch([() => props.search], () => {
-      loadLocations();
-    });
-
-    onMounted(() => {
+      page.value = 1;
       loadLocations();
     });
 
