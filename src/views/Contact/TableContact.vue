@@ -93,9 +93,13 @@ export default {
     const total = computed(() => store.state.contacts.total);
     const page = ref(1);
     const itemsPerPage = ref(10);
+    const isLoading = ref(false);
 
     const loadContacts = async (options: any = {}) => {
+      if (isLoading.value) return;
+      
       try {
+        isLoading.value = true;
         const params = {
           isRead: props.active,
           search: props.search || undefined,
@@ -107,6 +111,8 @@ export default {
         await store.dispatch('contacts/loadContacts', params);
       } catch (error) {
         store.dispatch('notificator/errorResponse', error);
+      } finally {
+        isLoading.value = false;
       }
     };
 
@@ -131,14 +137,7 @@ export default {
       });
     });
 
-    onMounted(() => {
-      loadContacts({
-        page: page.value,
-        itemsPerPage: itemsPerPage.value
-      });
-    });
-
-    const headers = computed(() => [
+    const headers = ref([
       {
         title: "Estado",
         value: "status",

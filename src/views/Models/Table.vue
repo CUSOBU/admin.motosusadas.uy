@@ -55,9 +55,13 @@ export default {
     const itemsPerPage = ref(10);
     const models = computed(() => store.state.models.models || []);
     const dialogVisibleId = ref<string | null>(null);
+    const isLoading = ref(false);
 
     const loadModels = async (options: any = {}) => {
+      if (isLoading.value) return;
+      
       try {
+        isLoading.value = true;
         const params = {
           search: props.search || null,
         };
@@ -65,6 +69,8 @@ export default {
         await store.dispatch('models/loadModels', params);
       } catch (error) {
         store.dispatch('notificator/errorResponse', error);
+      } finally {
+        isLoading.value = false;
       }
     };
 
@@ -75,10 +81,7 @@ export default {
     };
 
     watch([() => props.search], () => {
-      loadModels();
-    });
-
-    onMounted(() => {
+      page.value = 1;
       loadModels();
     });
 

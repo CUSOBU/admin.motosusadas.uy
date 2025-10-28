@@ -74,9 +74,13 @@ export default {
     const users = computed(() => store.state.users.users || []);
     const total = computed(() => store.state.users.total || 0);
     const dialogVisibleId = ref<string | null>(null);
+    const isLoading = ref(false);
 
     const loadUsers = async (options: any = {}) => {
+      if (isLoading.value) return;
+      
       try {
+        isLoading.value = true;
         const params = {
           search: props.search || null,
           limit: options.itemsPerPage || itemsPerPage.value,
@@ -88,6 +92,8 @@ export default {
         await store.dispatch('users/loadUsers', params);
       } catch (error) {
         store.dispatch('notificator/errorResponse', error);
+      } finally {
+        isLoading.value = false;
       }
     };
 
@@ -99,13 +105,6 @@ export default {
 
     watch([() => props.search, () => props.active, () => props.authLevel], () => {
       page.value = 1;
-      loadUsers({
-        page: page.value,
-        itemsPerPage: itemsPerPage.value
-      });
-    });
-
-    onMounted(() => {
       loadUsers({
         page: page.value,
         itemsPerPage: itemsPerPage.value

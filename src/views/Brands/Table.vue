@@ -51,9 +51,13 @@ export default {
     const itemsPerPage = ref(10);
     const brands = computed(() => store.state.brands.brands || []);
     const dialogVisibleId = ref<string | null>(null);
+    const isLoading = ref(false);
 
     const loadBrands = async (options: any = {}) => {
+      if (isLoading.value) return;
+      
       try {
+        isLoading.value = true;
         const params = {
           search: props.search || null,
         };
@@ -61,6 +65,8 @@ export default {
         await store.dispatch('brands/loadBrands', params);
       } catch (error) {
         store.dispatch('notificator/errorResponse', error);
+      } finally {
+        isLoading.value = false;
       }
     };
 
@@ -71,10 +77,7 @@ export default {
     };
 
     watch([() => props.search], () => {
-      loadBrands();
-    });
-
-    onMounted(() => {
+      page.value = 1;
       loadBrands();
     });
 
